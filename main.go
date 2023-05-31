@@ -30,6 +30,7 @@ func main() {
 			items.POST("", ginitem.CreateItem(db))
 			items.GET("/:id", ginitem.GetItem(db))
 			items.PATCH("/:id", ginitem.UpdateItem(db))
+			items.DELETE("/:id", ginitem.DeleteItem(db))
 		}
 	}
 
