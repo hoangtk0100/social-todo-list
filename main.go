@@ -28,6 +28,7 @@ func main() {
 		items := v1.Group("/items")
 		{
 			items.POST("", ginitem.CreateItem(db))
+			items.GET("/:id", ginitem.GetItem(db))
 		}
 	}
 
