@@ -27,7 +27,7 @@ func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate
 	}
 
 	if data.Status == "Deleted" {
-		return model.ErrItemDeleted
+		return model.ErrItemIsDeleted
 	}
 
 	if err := biz.store.UpdateItem(ctx, map[string]interface{}{"id": id}, dataUpdate); err != nil {
