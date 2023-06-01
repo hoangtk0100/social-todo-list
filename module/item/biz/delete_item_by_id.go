@@ -27,7 +27,7 @@ func (biz *deleteItemBiz) DeleteItemById(ctx context.Context, id int) error {
 	}
 
 	if data.Status == "Deleted" {
-		return model.ErrItemDeleted
+		return model.ErrItemIsDeleted
 	}
 
 	if err := biz.store.DeleteItem(ctx, map[string]interface{}{"id": id}); err != nil {

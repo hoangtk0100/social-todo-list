@@ -8,8 +8,8 @@ import (
 )
 
 var (
-	ErrTitleEmpty  = errors.New("title cannot be empty")
-	ErrItemDeleted = errors.New("item was deleted")
+	ErrTitleCannotBeEmpty = errors.New("title cannot be empty")
+	ErrItemIsDeleted      = errors.New("item is deleted")
 )
 
 type TodoItem struct {
@@ -31,7 +31,7 @@ func (i *TodoItemCreation) Validate() error {
 	i.Title = strings.TrimSpace(i.Title)
 
 	if i.Title == "" {
-		return ErrTitleEmpty
+		return ErrTitleCannotBeEmpty
 	}
 
 	return nil
