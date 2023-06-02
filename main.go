@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -22,6 +23,7 @@ func main() {
 	log.Println("DB Connected :", db)
 
 	r := gin.Default()
+	r.Use(middleware.Recover())
 
 	v1 := r.Group("/v1")
 	{
