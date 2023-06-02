@@ -24,7 +24,13 @@ go.work
 .idea
 .vscode
 
+
+# ENV files
 *.production
 *.prod
 
 *.env
+
+
+# Static files
+static/*
