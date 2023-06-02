@@ -25,7 +25,7 @@ func (store *sqlStore) ListItem(
 	}
 
 	if err := db.Select("id").Count(&paging.Total).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	if err := db.
@@ -34,7 +34,7 @@ func (store *sqlStore) ListItem(
 		Offset((paging.Page - 1) * paging.Limit).
 		Limit(paging.Limit).
 		Find(&result).Error; err != nil {
-		return nil, err
+		return nil, common.ErrDB(err)
 	}
 
 	return result, nil
