@@ -9,14 +9,15 @@ import (
 
 type Image struct {
 	Id        int    `json:"id" gorm:"column:id;"`
+	Name      string `json:"name" gorm:"column:name;"`
 	Url       string `json:"url" gorm:"column:url;"`
 	Width     int    `json:"width" gorm:"column:width;"`
-	Height    int    `json:"height" gorm:"column:height"`
-	CloudName string `json:"cloud_name,omitempty" gorm:"-"`
-	Extension string `json:"extension,omitempty" gorm:"-"`
+	Height    int    `json:"height" gorm:"column:height;"`
+	CloudName string `json:"cloud_name,omitempty" gorm:"cloud_name"`
+	Extension string `json:"extension,omitempty" gorm:"extension"`
 }
 
-func (Image) TableName() string { return "Image" }
+func (Image) TableName() string { return "images" }
 
 func (i *Image) Fulfill(domain string) {
 	i.Url = fmt.Sprintf("%s/%s", domain, i.Url)
