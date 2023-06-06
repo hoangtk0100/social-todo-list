@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
 	"github.com/hoangtk0100/social-todo-list/component/tokenprovider/jwt"
 	"github.com/hoangtk0100/social-todo-list/component/uploadprovider"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
+	"github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -39,12 +39,9 @@ func main() {
 
 	uploadProvider := uploadprovider.NewR2Provider(storageBucket, storageRegion, storageAccessKey, storageSecretKey, storageEndPoint, storageDomain)
 	tokenProvider := jwt.NewJWTProvider("jwt", systemSecret)
+	authStore := storage.NewSQLStore(db)
+	authMiddleware := middleware.RequireAuth(authStore, tokenProvider)
 
-	router := setupRoutes(db, uploadProvider, tokenProvider)
-	router.Run(fmt.Sprint(":", serverAddress))
-}
-
-func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider, tokenProvider tokenprovider.TokenProvider) *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.Recover())
 
@@ -54,14 +51,15 @@ func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider, toke
 	{
 		v1.POST("/register", ginuser.Register(db))
 		v1.POST("/login", ginuser.Login(db, tokenProvider))
+		v1.GET("/profile", authMiddleware, ginuser.GetProfile(db))
 
-		uploads := v1.Group("/upload")
+		uploads := v1.Group("/upload", authMiddleware)
 		{
 			uploads.POST("", ginupload.Upload(db, uploadProvider))
 			uploads.POST("/local", ginupload.UploadLocal(db))
 		}
 
-		items := v1.Group("/items")
+		items := v1.Group("/items", authMiddleware)
 		{
 			items.POST("", ginitem.CreateItem(db))
 			items.GET("", ginitem.ListItem(db))
@@ -71,5 +69,5 @@ func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider, toke
 		}
 	}
 
-	return router
+	router.Run(fmt.Sprint(":", serverAddress))
 }
