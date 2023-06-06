@@ -18,6 +18,10 @@ func (store *sqlStore) ListItem(
 		Table(model.TodoItem{}.TableName()).
 		Where("status <> ?", "Deleted")
 
+	// Get items of requester only
+	requester := ctx.Value(common.CurrentUser).(common.Requester)
+	db = db.Where("user_id = ?", requester.GetUserId())
+
 	if f := filter; f != nil {
 		if v := f.Status; v != "" {
 			db = db.Where("status = ?", v)
