@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,7 +9,8 @@ import (
 	"github.com/hoangtk0100/social-todo-list/component/uploadprovider"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
-	"github.com/hoangtk0100/social-todo-list/module/upload/transport/ginupload"
+	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
+	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -21,6 +23,7 @@ func main() {
 	storageBucket := os.Getenv("STORAGE_BUCKET")
 	storageEndPoint := os.Getenv("STORAGE_END_POINT")
 	storageDomain := os.Getenv("STORAGE_DOMAIN")
+	serverAddress := os.Getenv("SERVER_ADDRESS")
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -33,16 +36,23 @@ func main() {
 
 	r2Provider := uploadprovider.NewR2Provider(storageBucket, storageRegion, storageAccessKey, storageSecretKey, storageEndPoint, storageDomain)
 
-	r := gin.Default()
-	r.Use(middleware.Recover())
+	router := setupRoutes(db, r2Provider)
+	router.Run(fmt.Sprint(":", serverAddress))
+}
 
-	r.Static("/static", "./static")
+func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider) *gin.Engine {
+	router := gin.Default()
+	router.Use(middleware.Recover())
 
-	v1 := r.Group("/v1")
+	router.Static("/static", "./static")
+
+	v1 := router.Group("/v1")
 	{
+		v1.POST("/register", ginuser.Register(db))
+
 		uploads := v1.Group("/upload")
 		{
-			uploads.POST("", ginupload.Upload(db, r2Provider))
+			uploads.POST("", ginupload.Upload(db, uploadProvider))
 			uploads.POST("/local", ginupload.UploadLocal(db))
 		}
 
@@ -56,5 +66,5 @@ func main() {
 		}
 	}
 
-	r.Run(":9090")
+	return router
 }
