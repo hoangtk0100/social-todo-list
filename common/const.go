@@ -2,6 +2,10 @@ package common
 
 import "log"
 
+const (
+	CurrentUser = "current_user"
+)
+
 func Recovery() {
 	if r := recover(); r != nil {
 		log.Println("Recovered:", r)
