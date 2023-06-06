@@ -2,6 +2,7 @@ package biz
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
@@ -13,11 +14,15 @@ type UpdateItemStorage interface {
 }
 
 type updateItemBiz struct {
-	store UpdateItemStorage
+	store     UpdateItemStorage
+	requester common.Requester
 }
 
-func NewUpdateItemBiz(store UpdateItemStorage) *updateItemBiz {
-	return &updateItemBiz{store: store}
+func NewUpdateItemBiz(store UpdateItemStorage, requester common.Requester) *updateItemBiz {
+	return &updateItemBiz{
+		store:     store,
+		requester: requester,
+	}
 }
 
 func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate *model.TodoItemUpdate) error {
@@ -29,6 +34,10 @@ func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate
 
 	if data.Status == "Deleted" {
 		return model.ErrItemIsDeleted
+	}
+
+	if !common.IsOwner(biz.requester, data.UserId) && !common.IsAdmin(biz.requester) {
+		return common.ErrNoPermission(errors.New("you have no permission"))
 	}
 
 	if err := biz.store.UpdateItem(ctx, map[string]interface{}{"id": id}, dataUpdate); err != nil {

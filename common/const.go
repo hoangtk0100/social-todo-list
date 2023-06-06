@@ -24,3 +24,17 @@ func (p TokenPayload) UserId() int {
 func (p TokenPayload) Role() string {
 	return p.URole
 }
+
+type Requester interface {
+	GetUserId() int
+	GetEmail() string
+	GetRole() string
+}
+
+func IsAdmin(requester Requester) bool {
+	return requester.GetRole() == "admin" || requester.GetRole() == "mod"
+}
+
+func IsOwner(requester Requester, ownerId int) bool {
+	return requester.GetUserId() == ownerId
+}
