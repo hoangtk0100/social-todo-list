@@ -6,6 +6,8 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
+	"github.com/hoangtk0100/social-todo-list/component/tokenprovider/jwt"
 	"github.com/hoangtk0100/social-todo-list/component/uploadprovider"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
@@ -24,6 +26,7 @@ func main() {
 	storageEndPoint := os.Getenv("STORAGE_END_POINT")
 	storageDomain := os.Getenv("STORAGE_DOMAIN")
 	serverAddress := os.Getenv("SERVER_ADDRESS")
+	systemSecret := os.Getenv("SECRET")
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -34,13 +37,14 @@ func main() {
 
 	log.Println("DB Connected :", db)
 
-	r2Provider := uploadprovider.NewR2Provider(storageBucket, storageRegion, storageAccessKey, storageSecretKey, storageEndPoint, storageDomain)
+	uploadProvider := uploadprovider.NewR2Provider(storageBucket, storageRegion, storageAccessKey, storageSecretKey, storageEndPoint, storageDomain)
+	tokenProvider := jwt.NewJWTProvider("jwt", systemSecret)
 
-	router := setupRoutes(db, r2Provider)
+	router := setupRoutes(db, uploadProvider, tokenProvider)
 	router.Run(fmt.Sprint(":", serverAddress))
 }
 
-func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider) *gin.Engine {
+func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider, tokenProvider tokenprovider.TokenProvider) *gin.Engine {
 	router := gin.Default()
 	router.Use(middleware.Recover())
 
@@ -49,6 +53,7 @@ func setupRoutes(db *gorm.DB, uploadProvider uploadprovider.UploadProvider) *gin
 	v1 := router.Group("/v1")
 	{
 		v1.POST("/register", ginuser.Register(db))
+		v1.POST("/login", ginuser.Login(db, tokenProvider))
 
 		uploads := v1.Group("/upload")
 		{
