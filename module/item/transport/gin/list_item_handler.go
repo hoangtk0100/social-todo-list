@@ -34,6 +34,10 @@ func ListItem(db *gorm.DB) func(ctx *gin.Context) {
 			panic(err)
 		}
 
+		for index := range result {
+			result[index].Mask()
+		}
+
 		c.JSON(http.StatusOK, common.NewSuccessResponse(result, queryString.Paging, queryString.Filter))
 	}
 }
