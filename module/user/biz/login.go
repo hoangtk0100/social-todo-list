@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
+	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 )
 
 type LoginStorage interface {

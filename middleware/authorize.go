@@ -5,10 +5,11 @@ import (
 	"errors"
 	"strings"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
+	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 )
 
 const (
@@ -62,13 +63,14 @@ func extractTokenFromHeader(input string) (string, error) {
 	return parts[1], nil
 }
 
-func RequireAuth(store AuthenStore, tokenProvider tokenprovider.TokenProvider) func(*gin.Context) {
+func RequireAuth(store AuthenStore, serviceCtx goservice.ServiceContext) func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		token, err := extractTokenFromHeader(ctx.GetHeader(authorizationHeaderKey))
 		if err != nil {
 			panic(err)
 		}
 
+		tokenProvider := serviceCtx.MustGet(common.PluginJWT).(tokenprovider.TokenProvider)
 		payload, err := tokenProvider.Validate(token)
 		if err != nil {
 			panic(err)

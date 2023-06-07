@@ -3,7 +3,10 @@ package common
 import "log"
 
 const (
-	CurrentUser = "current_user"
+	CurrentUser  = "current_user"
+	PluginDBMain = "mysql"
+	PluginJWT    = "jwt"
+	PluginR2     = "r2"
 )
 
 type DBType int

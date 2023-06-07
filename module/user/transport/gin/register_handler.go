@@ -3,6 +3,7 @@ package ginuser
 import (
 	"net/http"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/biz"
@@ -11,13 +12,15 @@ import (
 	"gorm.io/gorm"
 )
 
-func Register(db *gorm.DB) func(*gin.Context) {
+func Register(serviceCtx goservice.ServiceContext) func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		var data model.UserCreate
 
 		if err := ctx.ShouldBind(&data); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
+
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 
 		store := storage.NewSQLStore(db)
 		md5 := common.NewMd5Hash()

@@ -3,6 +3,7 @@ package ginitem
 import (
 	"net/http"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
@@ -11,24 +12,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func ListItem(db *gorm.DB) func(ctx *gin.Context) {
-	return func(c *gin.Context) {
+func ListItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
 		var queryString struct {
 			common.Paging
 			model.Filter
 		}
 
-		if err := c.ShouldBind(&queryString); err != nil {
+		if err := ctx.ShouldBind(&queryString); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
 		queryString.Paging.Process()
 
-		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		store := storage.NewSQLStore(db)
 		business := biz.NewListItemBiz(store, requester)
 
-		result, err := business.ListItem(c.Request.Context(), &queryString.Filter, &queryString.Paging)
+		result, err := business.ListItem(ctx.Request.Context(), &queryString.Filter, &queryString.Paging)
 
 		if err != nil {
 			panic(err)
@@ -38,6 +40,6 @@ func ListItem(db *gorm.DB) func(ctx *gin.Context) {
 			result[index].Mask()
 		}
 
-		c.JSON(http.StatusOK, common.NewSuccessResponse(result, queryString.Paging, queryString.Filter))
+		ctx.JSON(http.StatusOK, common.NewSuccessResponse(result, queryString.Paging, queryString.Filter))
 	}
 }
