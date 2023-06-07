@@ -3,7 +3,7 @@ package common
 import "log"
 
 const (
-	CurrentUser  = "current_user"
+	CurrentUser = "current_user"
 )
 
 type DBType int
