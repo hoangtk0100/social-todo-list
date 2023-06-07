@@ -19,8 +19,8 @@ func (store *sqlStore) ListItem(
 		Where("status <> ?", "Deleted")
 
 	// Get items of requester only
-	requester := ctx.Value(common.CurrentUser).(common.Requester)
-	db = db.Where("user_id = ?", requester.GetUserId())
+	// requester := ctx.Value(common.CurrentUser).(common.Requester)
+	// db = db.Where("user_id = ?", requester.GetUserId())
 
 	if f := filter; f != nil {
 		if v := f.Status; v != "" {
@@ -30,6 +30,10 @@ func (store *sqlStore) ListItem(
 
 	if err := db.Select("id").Count(&paging.Total).Error; err != nil {
 		return nil, common.ErrDB(err)
+	}
+
+	for _, value := range moreKeys {
+		db = db.Preload(value)
 	}
 
 	if err := db.

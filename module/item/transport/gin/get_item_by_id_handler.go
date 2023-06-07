@@ -28,6 +28,8 @@ func GetItem(db *gorm.DB) func(ctx *gin.Context) {
 			panic(err)
 		}
 
+		data.Mask()
+
 		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
 	}
 }

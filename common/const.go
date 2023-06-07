@@ -3,7 +3,14 @@ package common
 import "log"
 
 const (
-	CurrentUser = "current_user"
+	CurrentUser  = "current_user"
+)
+
+type DBType int
+
+const (
+	DBTypeUser DBType = 1
+	DBTypeItem DBType = 2
 )
 
 func Recovery() {

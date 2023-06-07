@@ -30,8 +30,8 @@ func (biz *listItemBiz) ListItem(ctx context.Context,
 	paging *common.Paging,
 ) ([]model.TodoItem, error) {
 	newCtx := context.WithValue(ctx, common.CurrentUser, biz.requester)
-	
-	data, err := biz.store.ListItem(newCtx, filter, paging)
+
+	data, err := biz.store.ListItem(newCtx, filter, paging, "Owner")
 
 	if err != nil {
 		return nil, common.ErrCannotListEntity(model.EntityName, err)
