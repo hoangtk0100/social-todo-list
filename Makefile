@@ -16,4 +16,13 @@ db:
 server:
 	go run .
 
-.PHONY: mysql createdb dropdb db server
+build:
+	go build -o app
+
+outenv:
+	./app outenv
+
+outenvfile:
+	./app outenv > .env
+
+.PHONY: mysql createdb dropdb db server build outenv outenvfile

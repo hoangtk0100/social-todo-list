@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
@@ -11,18 +12,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetItem(db *gorm.DB) func(ctx *gin.Context) {
-	return func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+func GetItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		store := storage.NewSQLStore(db)
 		business := biz.NewGetItemBiz(store)
 
-		data, err := business.GetItemById(c.Request.Context(), id)
+		data, err := business.GetItemById(ctx.Request.Context(), id)
 
 		if err != nil {
 			panic(err)
@@ -30,6 +32,6 @@ func GetItem(db *gorm.DB) func(ctx *gin.Context) {
 
 		data.Mask()
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
+		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(data))
 	}
 }

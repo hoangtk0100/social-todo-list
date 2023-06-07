@@ -77,7 +77,7 @@ func ErrDB(err error) *AppError {
 func ErrInternal(err error) *AppError {
 	return NewFullErrorResponse(http.StatusInternalServerError,
 		err,
-		"something went wrong int server",
+		"something went wrong in server",
 		err.Error(),
 		"ErrInternal",
 	)

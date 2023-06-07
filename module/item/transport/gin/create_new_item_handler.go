@@ -3,6 +3,7 @@ package ginitem
 import (
 	"net/http"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
@@ -11,24 +12,25 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateItem(db *gorm.DB) func(ctx *gin.Context) {
-	return func(c *gin.Context) {
+func CreateItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
 		var itemData model.TodoItemCreation
 
-		if err := c.ShouldBind(&itemData); err != nil {
+		if err := ctx.ShouldBind(&itemData); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
-		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
 		itemData.UserId = requester.GetUserId()
 
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		store := storage.NewSQLStore(db)
 		business := biz.NewCreateItemBiz(store)
 
-		if err := business.CreateNewItem(c.Request.Context(), &itemData); err != nil {
+		if err := business.CreateNewItem(ctx.Request.Context(), &itemData); err != nil {
 			panic(err)
 		}
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(itemData.Id))
+		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(itemData.Id))
 	}
 }

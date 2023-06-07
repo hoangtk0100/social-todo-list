@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
@@ -12,9 +13,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func UpdateItem(db *gorm.DB) func(ctx *gin.Context) {
-	return func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+func UpdateItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		id, err := strconv.Atoi(ctx.Param("id"))
 
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
@@ -22,18 +23,19 @@ func UpdateItem(db *gorm.DB) func(ctx *gin.Context) {
 
 		var data model.TodoItemUpdate
 
-		if err := c.ShouldBind(&data); err != nil {
+		if err := ctx.ShouldBind(&data); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
-		requester := c.MustGet(common.CurrentUser).(common.Requester)
+		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		store := storage.NewSQLStore(db)
 		business := biz.NewUpdateItemBiz(store, requester)
 
-		if err := business.UpdateItemById(c.Request.Context(), id, &data); err != nil {
+		if err := business.UpdateItemById(ctx.Request.Context(), id, &data); err != nil {
 			panic(err)
 		}
 
-		c.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
+		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
 	}
 }

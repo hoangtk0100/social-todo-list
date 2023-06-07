@@ -17,8 +17,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/component/uploadprovider"
 	"github.com/hoangtk0100/social-todo-list/module/upload/model"
+	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
 )
 
 type CreateImageStorage interface {

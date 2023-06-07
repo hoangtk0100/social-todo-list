@@ -2,21 +2,55 @@ package jwt
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
+	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 )
 
 type jwtProvider struct {
-	prefix string
+	name   string
 	secret string
 }
 
-func NewJWTProvider(prefix string, secret string) *jwtProvider {
-	return &jwtProvider{prefix: prefix, secret: secret}
+func NewJWTProvider(name string) *jwtProvider {
+	return &jwtProvider{name: name}
+}
+
+func (p *jwtProvider) GetPrefix() string {
+	return p.Name()
+}
+
+func (p *jwtProvider) Get() interface{} {
+	return p
+}
+
+func (p *jwtProvider) Name() string {
+	return p.name
+}
+
+func (p *jwtProvider) InitFlags() {
+	flag.StringVar(&p.secret, "jwt-secret", common.GenSalt(40), "Secret key for generating JWT")
+}
+
+func (p *jwtProvider) Configure() error {
+	return nil
+}
+
+func (p *jwtProvider) Run() error {
+	return nil
+}
+
+func (p *jwtProvider) Stop() <-chan bool {
+	c := make(chan bool)
+	go func() {
+		c <- true
+	}()
+	
+	return c
 }
 
 type myClaims struct {

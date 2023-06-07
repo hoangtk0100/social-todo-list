@@ -3,22 +3,26 @@ package ginuser
 import (
 	"net/http"
 
+	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/component/tokenprovider"
 	"github.com/hoangtk0100/social-todo-list/module/user/biz"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 	"github.com/hoangtk0100/social-todo-list/module/user/storage"
+	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 	"gorm.io/gorm"
 )
 
-func Login(db *gorm.DB, tokenProvider tokenprovider.TokenProvider) func(*gin.Context) {
+func Login(serviceCtx goservice.ServiceContext) func(*gin.Context) {
 	return func(ctx *gin.Context) {
 		var loginData model.UserLogin
 
 		if err := ctx.ShouldBind(&loginData); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
+
+		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
+		tokenProvider := serviceCtx.MustGet(common.PluginJWT).(tokenprovider.TokenProvider)
 
 		store := storage.NewSQLStore(db)
 		md5 := common.NewMd5Hash()
