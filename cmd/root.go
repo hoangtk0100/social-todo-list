@@ -7,6 +7,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
+	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
 
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
@@ -72,6 +73,10 @@ var rootCmd = &cobra.Command{
 					items.GET("/:id", ginitem.GetItem(service))
 					items.PATCH("/:id", ginitem.UpdateItem(service))
 					items.DELETE("/:id", ginitem.DeleteItem(service))
+
+					items.POST("/:id/like", ginuserlikeitem.LikeItem(service))
+					items.DELETE("/:id/unlike", ginuserlikeitem.UnlikeItem(service))
+					items.GET("/:id/liked-users", ginuserlikeitem.ListLikedUsers(service))
 				}
 			}
 		})
