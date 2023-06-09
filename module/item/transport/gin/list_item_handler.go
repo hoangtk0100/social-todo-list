@@ -8,7 +8,9 @@ import (
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"github.com/hoangtk0100/social-todo-list/module/item/repository"
 	"github.com/hoangtk0100/social-todo-list/module/item/storage"
+	userLikeStorage "github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
 	"gorm.io/gorm"
 )
 
@@ -28,7 +30,9 @@ func ListItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 		store := storage.NewSQLStore(db)
-		business := biz.NewListItemBiz(store, requester)
+		likeStore := userLikeStorage.NewSQLStore(db)
+		repo := repository.NewListItemRepo(store, likeStore, requester)
+		business := biz.NewListItemBiz(repo, requester)
 
 		result, err := business.ListItem(ctx.Request.Context(), &queryString.Filter, &queryString.Paging)
 

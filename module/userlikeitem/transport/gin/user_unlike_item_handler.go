@@ -6,6 +6,7 @@ import (
 	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
 	"github.com/hoangtk0100/social-todo-list/common"
+	itemStorage "github.com/hoangtk0100/social-todo-list/module/item/storage"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/biz"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
@@ -23,7 +24,8 @@ func UnlikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
 
 		store := storage.NewSQLStore(db)
-		business := biz.NewUserUnlikeItemBiz(store)
+		itemStore := itemStorage.NewSQLStore(db)
+		business := biz.NewUserUnlikeItemBiz(store, itemStore)
 
 		if err := business.UnlikeItem(ctx.Request.Context(), requester.GetUserId(), int(id.GetLocalID())); err != nil {
 			panic(err)
