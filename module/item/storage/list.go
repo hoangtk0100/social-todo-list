@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"strings"
+
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 	"golang.org/x/net/context"
@@ -36,13 +38,29 @@ func (store *sqlStore) ListItem(
 		db = db.Preload(value)
 	}
 
+	if cursor := strings.TrimSpace(paging.FakeCursor); cursor != "" {
+		id, err := common.UIDFromBase58(cursor)
+		if err != nil {
+			return nil, common.ErrDB(err)
+		}
+
+		db = db.Where("id < ?", id.GetLocalID())
+	} else {
+		db = db.Offset((paging.Page - 1) * paging.Limit)
+	}
+
 	if err := db.
 		Select("*").
 		Order("id desc").
-		Offset((paging.Page - 1) * paging.Limit).
 		Limit(paging.Limit).
 		Find(&result).Error; err != nil {
 		return nil, common.ErrDB(err)
+	}
+
+	size := len(result)
+	if size > 0 {
+		result[size-1].Mask()
+		paging.NextCursor = result[size-1].FakeId.String()
 	}
 
 	return result, nil
