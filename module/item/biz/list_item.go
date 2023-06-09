@@ -7,7 +7,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
 
-type ListItemStorage interface {
+type ListItemRepo interface {
 	ListItem(
 		ctx context.Context,
 		filter *model.Filter,
@@ -17,12 +17,12 @@ type ListItemStorage interface {
 }
 
 type listItemBiz struct {
-	store     ListItemStorage
+	repo      ListItemRepo
 	requester common.Requester
 }
 
-func NewListItemBiz(store ListItemStorage, requester common.Requester) *listItemBiz {
-	return &listItemBiz{store: store, requester: requester}
+func NewListItemBiz(repo ListItemRepo, requester common.Requester) *listItemBiz {
+	return &listItemBiz{repo: repo, requester: requester}
 }
 
 func (biz *listItemBiz) ListItem(ctx context.Context,
@@ -31,7 +31,7 @@ func (biz *listItemBiz) ListItem(ctx context.Context,
 ) ([]model.TodoItem, error) {
 	newCtx := context.WithValue(ctx, common.CurrentUser, biz.requester)
 
-	data, err := biz.store.ListItem(newCtx, filter, paging, "Owner")
+	data, err := biz.repo.ListItem(newCtx, filter, paging, "Owner")
 
 	if err != nil {
 		return nil, common.ErrCannotListEntity(model.EntityName, err)
