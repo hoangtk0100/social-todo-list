@@ -71,7 +71,7 @@ func DecomposeUID(s string) (UID, error) {
 	return u, nil
 }
 
-func FromBase58(s string) (UID, error) {
+func UIDFromBase58(s string) (UID, error) {
 	return DecomposeUID(string(base58.Decode(s)))
 }
 
@@ -80,7 +80,7 @@ func (uid UID) MarshalJSON() ([]byte, error) {
 }
 
 func (uid *UID) UnmarshalJSON(data []byte) error {
-	decodeUID, err := FromBase58(strings.Replace(string(data), "\"", "", -1))
+	decodeUID, err := UIDFromBase58(strings.Replace(string(data), "\"", "", -1))
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,7 @@ import (
 
 func UnlikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := common.FromBase58(ctx.Param("id"))
+		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
