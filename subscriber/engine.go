@@ -32,6 +32,10 @@ func (engine *pbEngine) Start() error {
 		IncreaseLikedCountAfterUserLikeItem(engine.serviceCtx),
 	)
 
+	engine.startSubTopic(common.TopicUserUnlikedItem, true,
+		DecreaseLikedCountAfterUserUnlikeItem(engine.serviceCtx),
+	)
+
 	return nil
 }
 
@@ -45,7 +49,7 @@ func (engine *pbEngine) startSubTopic(topic pubsub.Topic, isConcurrent bool, job
 
 	getJobHandler := func(job *subJob, msg *pubsub.Message) asyncjob.JobHandler {
 		return func(ctx context.Context) error {
-			log.Println("Running job", job.Name, "- Value:", msg.Data())
+			log.Printf("Running job[%s] - Value: %v", job.Name, msg.Data())
 			return job.Hdl(ctx, msg)
 		}
 	}
