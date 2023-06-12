@@ -8,6 +8,8 @@ import (
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
+	pubsub "github.com/hoangtk0100/social-todo-list/pubsub"
+	"github.com/hoangtk0100/social-todo-list/subscriber"
 
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
@@ -29,6 +31,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("main.mysql", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
+		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubSub)),
 	)
 
 	return service
@@ -80,6 +83,8 @@ var rootCmd = &cobra.Command{
 				}
 			}
 		})
+
+		_ = subscriber.NewPBEngine(service).Start()
 
 		if err := service.Start(); err != nil {
 			serviceLogger.Fatalln(err)

@@ -7,6 +7,10 @@ const (
 	PluginDBMain = "mysql"
 	PluginJWT    = "jwt"
 	PluginR2     = "r2"
+	PluginPubSub = "pubsub"
+
+	TopicUserLikedItem   = "TopicUserLikedItem"
+	TopicUserUnlikedItem = "TopicUserUnlikedItem"
 )
 
 type DBType int
