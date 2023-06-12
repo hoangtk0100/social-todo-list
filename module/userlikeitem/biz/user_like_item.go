@@ -6,23 +6,20 @@ import (
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
+	"github.com/hoangtk0100/social-todo-list/pubsub"
 )
 
 type UserLikeItemStorage interface {
 	Create(ctx context.Context, data *model.Like) error
 }
 
-type IncreaseLikedCountStorage interface {
-	IncreaseLikedCount(ctx context.Context, id int) error
-}
-
 type userLikeItemBiz struct {
-	store     UserLikeItemStorage
-	itemStore IncreaseLikedCountStorage
+	store UserLikeItemStorage
+	ps    pubsub.PubSub
 }
 
-func NewUserLikeItemBiz(store UserLikeItemStorage, itemStore IncreaseLikedCountStorage) *userLikeItemBiz {
-	return &userLikeItemBiz{store: store, itemStore: itemStore}
+func NewUserLikeItemBiz(store UserLikeItemStorage, ps pubsub.PubSub) *userLikeItemBiz {
+	return &userLikeItemBiz{store: store, ps: ps}
 }
 
 func (biz *userLikeItemBiz) LikeItem(ctx context.Context, data *model.Like) error {
@@ -30,13 +27,9 @@ func (biz *userLikeItemBiz) LikeItem(ctx context.Context, data *model.Like) erro
 		return model.ErrCannotLikeItem(err)
 	}
 
-	go func() {
-		defer common.Recovery()
-
-		if err := biz.itemStore.IncreaseLikedCount(ctx, data.ItemId); err != nil {
-			log.Println(err)
-		}
-	}()
+	if err := biz.ps.Publish(ctx, common.TopicUserLikedItem, pubsub.NewMessage(data)); err != nil {
+		log.Println(err)
+	}
 
 	return nil
 }
