@@ -10,7 +10,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 	"github.com/hoangtk0100/social-todo-list/module/item/repository"
 	"github.com/hoangtk0100/social-todo-list/module/item/storage"
-	userLikeStorage "github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
+	"github.com/hoangtk0100/social-todo-list/module/item/storage/rpc"
 	"gorm.io/gorm"
 )
 
@@ -29,8 +29,12 @@ func ListItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
 		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
+		apiItemCaller := serviceCtx.MustGet(common.PluginItemAPI).(interface {
+			GetServiceURL() string
+		})
+
 		store := storage.NewSQLStore(db)
-		likeStore := userLikeStorage.NewSQLStore(db)
+		likeStore := rpc.NewItemService(apiItemCaller.GetServiceURL(), serviceCtx.Logger("rpc.itemlikes"))
 		repo := repository.NewListItemRepo(store, likeStore, requester)
 		business := biz.NewListItemBiz(repo, requester)
 

@@ -3,11 +3,12 @@ package common
 import "log"
 
 const (
-	CurrentUser  = "current_user"
-	PluginDBMain = "mysql"
-	PluginJWT    = "jwt"
-	PluginR2     = "r2"
-	PluginPubSub = "pubsub"
+	CurrentUser   = "current_user"
+	PluginDBMain  = "mysql"
+	PluginJWT     = "jwt"
+	PluginR2      = "r2"
+	PluginPubSub  = "pubsub"
+	PluginItemAPI = "item-api"
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"

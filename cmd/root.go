@@ -8,12 +8,14 @@ import (
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
+	rpcuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/rpc"
 	pubsub "github.com/hoangtk0100/social-todo-list/pubsub"
 	"github.com/hoangtk0100/social-todo-list/subscriber"
 
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
+	"github.com/hoangtk0100/social-todo-list/plugin/rpccaller"
 	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm"
 	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider/jwt"
 	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
@@ -32,6 +34,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
 		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubSub)),
+		goservice.WithInitRunnable(rpccaller.NewApiItemCaller(common.PluginItemAPI)),
 	)
 
 	return service
@@ -80,6 +83,11 @@ var rootCmd = &cobra.Command{
 					items.POST("/:id/like", ginuserlikeitem.LikeItem(service))
 					items.DELETE("/:id/unlike", ginuserlikeitem.UnlikeItem(service))
 					items.GET("/:id/liked-users", ginuserlikeitem.ListLikedUsers(service))
+				}
+
+				rpc := v1.Group("/rpc")
+				{
+					rpc.POST("/get_item_likes", rpcuserlikeitem.GetItemLikes(service))
 				}
 			}
 		})
