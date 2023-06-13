@@ -1,0 +1,23 @@
+# Git files
+.git
+.gitignore
+
+# OS files
+.DS_STORE
+
+# IDEs
+.idea
+.vscode
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Logs
+*.log
