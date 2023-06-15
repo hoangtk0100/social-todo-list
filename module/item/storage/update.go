@@ -5,10 +5,14 @@ import (
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 )
 
 func (store *sqlStore) UpdateItem(ctx context.Context, cond map[string]interface{}, dataUpdate *model.TodoItemUpdate) error {
+	_, span := trace.StartSpan(ctx, "item.storage.update")
+	defer span.End()
+
 	if err := store.db.Where(cond).Updates(dataUpdate).Error; err != nil {
 		return common.ErrDB(err)
 	}
@@ -17,6 +21,9 @@ func (store *sqlStore) UpdateItem(ctx context.Context, cond map[string]interface
 }
 
 func (store *sqlStore) IncreaseLikedCount(ctx context.Context, id int) error {
+	_, span := trace.StartSpan(ctx, "item.storage.increase_liked_count")
+	defer span.End()
+
 	if err := store.db.Table(model.TodoItem{}.TableName()).
 		Where("id = ?", id).
 		Update("liked_count", gorm.Expr("liked_count + ?", 1)).
@@ -28,6 +35,9 @@ func (store *sqlStore) IncreaseLikedCount(ctx context.Context, id int) error {
 }
 
 func (store *sqlStore) DecreaseLikedCount(ctx context.Context, id int) error {
+	_, span := trace.StartSpan(ctx, "item.storage.decrease_liked_count")
+	defer span.End()
+
 	if err := store.db.Table(model.TodoItem{}.TableName()).
 		Where("id = ?", id).
 		Update("liked_count", gorm.Expr("liked_count - ?", 1)).

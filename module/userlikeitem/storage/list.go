@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
+	"go.opencensus.io/trace"
 )
 
 const (
@@ -16,6 +17,9 @@ const (
 )
 
 func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common.Paging) ([]common.SimpleUser, error) {
+	_, span := trace.StartSpan(ctx, "userlikeitem.storage.list_users")
+	defer span.End()
+
 	var result []model.Like
 	db := store.db.Table(model.Like{}.TableName()).Where("item_id = ?", itemId)
 
@@ -58,6 +62,9 @@ func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common
 }
 
 func (store *sqlStore) GetItemLikes(ctx context.Context, ids []int) (map[int]int, error) {
+	_, span := trace.StartSpan(ctx, "userlikeitem.storage.get_item_likes")
+	defer span.End()
+
 	result := make(map[int]int)
 
 	type sqlData struct {
