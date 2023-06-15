@@ -5,10 +5,14 @@ import (
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
+	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 )
 
 func (store *sqlStore) Find(ctx context.Context, userId, itemId int) (*model.Like, error) {
+	_, span := trace.StartSpan(ctx, "userlikeitem.storage.get")
+	defer span.End()
+
 	var data model.Like
 
 	if err := store.db.

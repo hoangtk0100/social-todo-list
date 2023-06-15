@@ -5,6 +5,7 @@ import (
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"go.opencensus.io/trace"
 	"golang.org/x/net/context"
 )
 
@@ -14,6 +15,9 @@ func (store *sqlStore) ListItem(
 	paging *common.Paging,
 	moreKeys ...string,
 ) ([]model.TodoItem, error) {
+	_, span := trace.StartSpan(ctx, "item.storage.list")
+	defer span.End()
+
 	var result []model.TodoItem
 
 	db := store.db.

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hoangtk0100/social-todo-list/common"
+	"go.opencensus.io/trace"
 )
 
 func (store *sqlStore) ListImages(
@@ -11,6 +12,9 @@ func (store *sqlStore) ListImages(
 	ids []int,
 	moreKeys ...string,
 ) ([]common.Image, error) {
+	_, span := trace.StartSpan(ctx, "upload.storage.list")
+	defer span.End()
+
 	var result []common.Image
 
 	if err := store.db.
