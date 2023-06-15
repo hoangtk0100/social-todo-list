@@ -2,7 +2,6 @@ package ginitem
 
 import (
 	"net/http"
-	"strconv"
 
 	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
@@ -14,8 +13,7 @@ import (
 
 func DeleteItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
-
+		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
@@ -24,7 +22,7 @@ func DeleteItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 		store := storage.NewSQLStore(db)
 		business := biz.NewDeleteItemBiz(store)
 
-		if err := business.DeleteItemById(ctx.Request.Context(), id); err != nil {
+		if err := business.DeleteItemById(ctx.Request.Context(), int(id.GetLocalID())); err != nil {
 			panic(err)
 		}
 

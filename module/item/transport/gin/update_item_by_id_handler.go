@@ -2,7 +2,6 @@ package ginitem
 
 import (
 	"net/http"
-	"strconv"
 
 	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
@@ -15,14 +14,12 @@ import (
 
 func UpdateItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		id, err := strconv.Atoi(ctx.Param("id"))
-
+		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
 
 		var data model.TodoItemUpdate
-
 		if err := ctx.ShouldBind(&data); err != nil {
 			panic(common.ErrInvalidRequest(err))
 		}
@@ -32,7 +29,7 @@ func UpdateItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 		store := storage.NewSQLStore(db)
 		business := biz.NewUpdateItemBiz(store, requester)
 
-		if err := business.UpdateItemById(ctx.Request.Context(), id, &data); err != nil {
+		if err := business.UpdateItemById(ctx.Request.Context(), int(id.GetLocalID()), &data); err != nil {
 			panic(err)
 		}
 
