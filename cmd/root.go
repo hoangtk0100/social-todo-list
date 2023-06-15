@@ -18,6 +18,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/plugin/rpccaller"
 	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm"
 	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider/jwt"
+	"github.com/hoangtk0100/social-todo-list/plugin/tracer"
 	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
 
 	goservice "github.com/200Lab-Education/go-sdk"
@@ -33,6 +34,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(sdkgorm.NewGormDB("main.mysql", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
+		goservice.WithInitRunnable(tracer.NewJaeger(common.PluginTracerJaeger)),
 		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubSub)),
 		goservice.WithInitRunnable(rpccaller.NewApiItemCaller(common.PluginItemAPI)),
 	)
