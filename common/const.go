@@ -3,12 +3,13 @@ package common
 import "log"
 
 const (
-	CurrentUser   = "current_user"
-	PluginDBMain  = "mysql"
-	PluginJWT     = "jwt"
-	PluginR2      = "r2"
-	PluginPubSub  = "pubsub"
-	PluginItemAPI = "item-api"
+	CurrentUser        = "current_user"
+	PluginDBMain       = "mysql"
+	PluginJWT          = "jwt"
+	PluginR2           = "r2"
+	PluginPubSub       = "pubsub"
+	PluginItemAPI      = "item-api"
+	PluginTracerJaeger = "social-todo-jaeger"
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"

@@ -18,6 +18,7 @@ require (
 )
 
 require (
+	github.com/apache/thrift v0.12.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
@@ -26,6 +27,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/microsoft/go-mssqldb v0.21.0 // indirect
 	github.com/rogpeppe/go-internal v1.10.0 // indirect
+	golang.org/x/sync v0.1.0 // indirect
+	google.golang.org/api v0.3.1 // indirect
 )
 
 require (
@@ -77,7 +80,7 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/x-cray/logrus-prefixed-formatter v0.5.2 // indirect
-	go.opencensus.io v0.20.1 // indirect
+	go.opencensus.io v0.20.1
 	golang.org/x/arch v0.3.0 // indirect
 	golang.org/x/crypto v0.9.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220808172628-8227340efae7 // indirect
