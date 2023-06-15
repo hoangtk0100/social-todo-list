@@ -1,6 +1,23 @@
 include app.env
 export
 
+upv:
+	docker compose up --build
+
+up:
+	docker compose up --build --detach
+
+down:
+	docker compose down
+
+cache:
+	docker build -t social-todo-service-cache -f Dockerfile-cache .
+
+upcache:
+	sed -i '' 's/Dockerfile/Dockerfile-with-cache/g' ./docker-compose.yaml
+	docker compose up --build --detach
+	sed -i '' 's/Dockerfile-with-cache/Dockerfile/g' ./docker-compose.yaml
+
 mysql:
 	docker run --name $(DB_CONTAINER_NAME) -p $(DB_PORT):3306 -e MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) -d $(MYSQL_IMAGE)
 
@@ -25,4 +42,4 @@ outenv:
 outenvfile:
 	./app outenv > .env
 
-.PHONY: mysql createdb dropdb db server build outenv outenvfile
+.PHONY: upv up down cache upcache mysql createdb dropdb db server build outenv outenvfile
