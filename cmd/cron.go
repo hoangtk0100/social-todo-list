@@ -5,7 +5,7 @@ import (
 
 	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm"
+	"github.com/hoangtk0100/social-todo-list/plugin/datastore/gormdb"
 	"github.com/spf13/cobra"
 	"gorm.io/gorm"
 )
@@ -17,7 +17,7 @@ var cronUpdateItemLikedCountCmd = &cobra.Command{
 		service := goservice.New(
 			goservice.WithName("social-todo-list"),
 			goservice.WithVersion("1.0.0"),
-			goservice.WithInitRunnable(sdkgorm.NewGormDB("main.mysql", common.PluginDBMain)),
+			goservice.WithInitRunnable(gormdb.NewGormDB("main.mysql", common.PluginDBMain)),
 		)
 
 		if err := service.Init(); err != nil {

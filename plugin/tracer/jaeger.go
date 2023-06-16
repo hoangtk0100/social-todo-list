@@ -98,7 +98,7 @@ func (j *jaeger) Configure() error {
 	trace.ApplyConfig(j.traceConfig())
 
 	j.logger = logger.GetCurrent().GetLogger(j.Name())
-	j.logger.Infof("Connecting tracer (%s) on %s", j.Name(), url)
+	j.logger.Infof("Connect tracer (%s) on %s", j.Name(), url)
 
 	return nil
 }

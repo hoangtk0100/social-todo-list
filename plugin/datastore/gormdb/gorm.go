@@ -1,4 +1,4 @@
-package sdkgorm
+package gormdb
 
 import (
 	"errors"
@@ -10,7 +10,7 @@ import (
 	glogger "gorm.io/gorm/logger"
 
 	"github.com/200Lab-Education/go-sdk/logger"
-	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm/gormdialects"
+	"github.com/hoangtk0100/social-todo-list/plugin/datastore/gormdb/dialects"
 	"gorm.io/gorm"
 )
 
@@ -150,13 +150,13 @@ func getDBType(dbType string) GormDBType {
 func (gdb *gormDB) getDBConn(t GormDBType) (dbConn *gorm.DB, err error) {
 	switch t {
 	case GormDBTypeMySQL:
-		return gormdialects.MySqlDB(gdb.Source)
+		return dialects.MySqlDB(gdb.Source)
 	case GormDBTypePostgres:
-		return gormdialects.PostgresDB(gdb.Source)
+		return dialects.PostgresDB(gdb.Source)
 	case GormDBTypeSQLite:
-		return gormdialects.SQLiteDB(gdb.Source)
+		return dialects.SQLiteDB(gdb.Source)
 	case GormDBTypeMSSQL:
-		return gormdialects.MSSqlDB(gdb.Source)
+		return dialects.MSSqlDB(gdb.Source)
 	}
 
 	return nil, nil

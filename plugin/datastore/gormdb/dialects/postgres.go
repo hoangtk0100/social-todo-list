@@ -1,4 +1,4 @@
-package gormdialects
+package dialects
 
 import (
 	"gorm.io/driver/postgres"
