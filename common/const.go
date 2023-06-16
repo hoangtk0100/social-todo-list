@@ -10,6 +10,7 @@ const (
 	PluginPubSub       = "pubsub"
 	PluginItemAPI      = "item-api"
 	PluginTracerJaeger = "social-todo-jaeger"
+	PluginRedis        = "redis"
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"

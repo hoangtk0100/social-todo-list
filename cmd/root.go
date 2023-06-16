@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/social-todo-list/memcache"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
@@ -15,6 +16,8 @@ import (
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
+	"github.com/hoangtk0100/social-todo-list/plugin/cache"
+	redisdb "github.com/hoangtk0100/social-todo-list/plugin/datastore/redis"
 	"github.com/hoangtk0100/social-todo-list/plugin/rpccaller"
 	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm"
 	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider/jwt"
@@ -36,6 +39,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
 		goservice.WithInitRunnable(tracer.NewJaeger(common.PluginTracerJaeger)),
 		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubSub)),
+		goservice.WithInitRunnable(redisdb.NewRedisDB(common.PluginRedis, common.PluginRedis)),
 		goservice.WithInitRunnable(rpccaller.NewApiItemCaller(common.PluginItemAPI)),
 	)
 
@@ -59,7 +63,8 @@ var rootCmd = &cobra.Command{
 			db := service.MustGet(common.PluginDBMain).(*gorm.DB)
 
 			authStore := userstorage.NewSQLStore(db)
-			authMiddleware := middleware.RequireAuth(authStore, service)
+			authCache := memcache.NewUserCache(cache.NewRedisCache(service), authStore)
+			authMiddleware := middleware.RequireAuth(authCache, service)
 
 			engine.Static("/static", "./static")
 			v1 := engine.Group("/v1")
