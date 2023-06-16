@@ -44,7 +44,7 @@ func (engine *pbEngine) startSubTopic(topic pubsub.Topic, isConcurrent bool, job
 
 	c, _ := ps.Subscribe(context.Background(), topic)
 	for _, item := range jobs {
-		log.Println("Setup subscriber for", item.Name)
+		log.Println("Setup subscriber :", item.Name)
 	}
 
 	getJobHandler := func(job *subJob, msg *pubsub.Message) asyncjob.JobHandler {

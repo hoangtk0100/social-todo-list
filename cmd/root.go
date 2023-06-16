@@ -17,9 +17,9 @@ import (
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
 	"github.com/hoangtk0100/social-todo-list/plugin/cache"
-	redisdb "github.com/hoangtk0100/social-todo-list/plugin/datastore/redis"
+	"github.com/hoangtk0100/social-todo-list/plugin/datastore/gormdb"
+	redisdb "github.com/hoangtk0100/social-todo-list/plugin/datastore/redisdb"
 	"github.com/hoangtk0100/social-todo-list/plugin/rpccaller"
-	"github.com/hoangtk0100/social-todo-list/plugin/sdkgorm"
 	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider/jwt"
 	"github.com/hoangtk0100/social-todo-list/plugin/tracer"
 	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
@@ -34,7 +34,7 @@ func newService() goservice.Service {
 	service := goservice.New(
 		goservice.WithName("social-todo-list"),
 		goservice.WithVersion("1.0.0"),
-		goservice.WithInitRunnable(sdkgorm.NewGormDB("main.mysql", common.PluginDBMain)),
+		goservice.WithInitRunnable(gormdb.NewGormDB("main.mysql", common.PluginDBMain)),
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
 		goservice.WithInitRunnable(tracer.NewJaeger(common.PluginTracerJaeger)),

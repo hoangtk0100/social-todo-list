@@ -96,13 +96,13 @@ func (r *redisDB) Configure() error {
 
 	// Test connection
 	if err := client.Ping(context.Background()).Err(); err != nil {
-		r.logger.Error("Cannot connect Redis", err.Error())
+		r.logger.Error("Cannot connect Redis ", err.Error())
 		return err
 	}
 
 	r.client = client
 
-	r.logger.Print("Connecting Redis on %s", opt.Addr)
+	r.logger.Infof("Connect Redis on %s", opt.Addr)
 
 	return nil
 }
