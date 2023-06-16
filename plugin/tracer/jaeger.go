@@ -60,8 +60,8 @@ func (j *jaeger) InitFlags() {
 	)
 }
 
-func (j *jaeger) isEnabled() bool {
-	return j.agentURI != ""
+func (j *jaeger) isDisabled() bool {
+	return j.agentURI == ""
 }
 
 func (j *jaeger) traceConfig() trace.Config {
@@ -77,7 +77,7 @@ func (j *jaeger) traceConfig() trace.Config {
 }
 
 func (j *jaeger) Configure() error {
-	if !j.isEnabled() {
+	if j.isDisabled() {
 		return nil
 	}
 
@@ -109,7 +109,7 @@ func (j *jaeger) Run() error {
 
 func (j *jaeger) Stop() <-chan bool {
 	go func() {
-		if !j.isEnabled() {
+		if j.isDisabled() {
 			j.stopChan <- true
 			return
 		}
