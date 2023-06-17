@@ -12,6 +12,7 @@ type Message struct {
 	topic     Topic // ignorable
 	data      interface{}
 	createdAt time.Time
+	ackFunc   func() error
 }
 
 func NewMessage(data interface{}) *Message {
@@ -38,4 +39,12 @@ func (m *Message) SetTopic(topic Topic) {
 
 func (m *Message) Data() interface{} {
 	return m.data
+}
+
+func (m *Message) SetAckFunc(f func() error) {
+	m.ackFunc = f
+}
+
+func (m *Message) Ack() error {
+	return m.ackFunc()
 }
