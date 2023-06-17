@@ -19,9 +19,16 @@ func IncreaseLikedCountAfterUserLikeItem(serviceCtx goservice.ServiceContext) su
 		Name: "Increase liked count after user likes item",
 		Hdl: func(ctx context.Context, msg *pubsub.Message) error {
 			db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
-			data := msg.Data().(HasItemId)
+			data := msg.Data().(map[string]interface{})
+			itemId := data["item_id"].(float64)
 
-			return storage.NewSQLStore(db).IncreaseLikedCount(ctx, data.GetItemId())
+			if err := storage.NewSQLStore(db).IncreaseLikedCount(ctx, int(itemId)); err != nil {
+				return err
+			}
+
+			_ = msg.Ack()
+
+			return nil
 		},
 	}
 }

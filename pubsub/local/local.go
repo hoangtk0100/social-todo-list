@@ -1,4 +1,4 @@
-package pubsub
+package localps
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/social-todo-list/pubsub"
 )
 
 // In-memory
@@ -13,49 +14,50 @@ import (
 // Transmission of messages with specific topic to all subscribers within a group
 type localPubSub struct {
 	name         string
-	messageQueue chan *Message
-	mapTopic     map[Topic][]chan *Message
+	messageQueue chan *pubsub.Message
+	mapTopic     map[pubsub.Topic][]chan *pubsub.Message
 	locker       *sync.RWMutex
 }
 
-func NewPubSub(name string) *localPubSub {
+func NewLocalPubSub(name string) *localPubSub {
 	return &localPubSub{
 		name:         name,
-		messageQueue: make(chan *Message, 10000),
-		mapTopic:     make(map[Topic][]chan *Message),
+		messageQueue: make(chan *pubsub.Message, 10000),
+		mapTopic:     make(map[pubsub.Topic][]chan *pubsub.Message),
 		locker:       new(sync.RWMutex),
 	}
 }
 
-func (ps *localPubSub) Publish(ctx context.Context, topic Topic, data *Message) error {
-	data.SetTopic(topic)
+func (ps *localPubSub) Publish(ctx context.Context, topic pubsub.Topic, msg *pubsub.Message) error {
+	msg.SetTopic(topic)
 
 	go func() {
 		defer common.Recovery()
 
-		ps.messageQueue <- data
-		log.Println("New message published :", data.String())
+		ps.messageQueue <- msg
+		log.Println("New message published :", msg.String())
 	}()
 
 	return nil
 }
 
-func (ps *localPubSub) Subscribe(ctx context.Context, topic Topic) (ch <-chan *Message, unsubscribe func()) {
-	c := make(chan *Message)
+func (ps *localPubSub) Subscribe(ctx context.Context, topic pubsub.Topic) (ch <-chan *pubsub.Message, unsubscribe func()) {
+	c := make(chan *pubsub.Message)
 
 	ps.locker.Lock()
 
-	if val, ok := ps.mapTopic[topic]; ok {
+	val, ok := ps.mapTopic[topic]
+	if ok {
 		val = append(ps.mapTopic[topic], c)
 		ps.mapTopic[topic] = val
 	} else {
-		ps.mapTopic[topic] = []chan *Message{c}
+		ps.mapTopic[topic] = []chan *pubsub.Message{c}
 	}
 
 	ps.locker.Unlock()
 
 	return c, func() {
-		log.Println("Unsubscribe")
+		log.Println("Unsubscribe :", topic)
 
 		if chans, ok := ps.mapTopic[topic]; ok {
 			for index := range chans {
@@ -84,7 +86,7 @@ func (ps *localPubSub) run() error {
 
 			if subs, ok := ps.mapTopic[msg.Topic()]; ok {
 				for index := range subs {
-					go func(c chan *Message) {
+					go func(c chan *pubsub.Message) {
 						defer common.Recovery()
 						c <- msg
 					}(subs[index])

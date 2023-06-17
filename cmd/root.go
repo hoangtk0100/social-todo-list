@@ -10,7 +10,7 @@ import (
 	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
 	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
 	rpcuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/rpc"
-	pubsub "github.com/hoangtk0100/social-todo-list/pubsub"
+	natsps "github.com/hoangtk0100/social-todo-list/pubsub/nats"
 	"github.com/hoangtk0100/social-todo-list/subscriber"
 
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
@@ -38,7 +38,7 @@ func newService() goservice.Service {
 		goservice.WithInitRunnable(jwt.NewJWTProvider(common.PluginJWT)),
 		goservice.WithInitRunnable(uploadprovider.NewR2Provider(common.PluginR2)),
 		goservice.WithInitRunnable(tracer.NewJaeger(common.PluginTracerJaeger)),
-		goservice.WithInitRunnable(pubsub.NewPubSub(common.PluginPubSub)),
+		goservice.WithInitRunnable(natsps.NewNatsPubSub(common.PluginPubSub)),
 		goservice.WithInitRunnable(redisdb.NewRedisDB(common.PluginRedis, common.PluginRedis)),
 		goservice.WithInitRunnable(rpccaller.NewApiItemCaller(common.PluginItemAPI)),
 	)

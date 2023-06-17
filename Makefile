@@ -18,6 +18,9 @@ upcache:
 	docker compose up --build --detach
 	sed -i '' 's/Dockerfile-with-cache/Dockerfile/g' ./docker-compose.yaml
 
+network:
+	docker network create $(NETWORK_NAME)
+
 mysql:
 	docker run --name $(DB_CONTAINER_NAME) -p $(DB_PORT):3306 -e MYSQL_ROOT_PASSWORD=$(DB_PASSWORD) -d $(MYSQL_IMAGE)
 
@@ -42,4 +45,4 @@ outenv:
 outenvfile:
 	./app outenv > .env
 
-.PHONY: upv up down cache upcache mysql createdb dropdb db server build outenv outenvfile
+.PHONY: upv up down cache upcache network mysql createdb dropdb db server build outenv outenvfile

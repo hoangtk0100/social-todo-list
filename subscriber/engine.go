@@ -49,7 +49,7 @@ func (engine *pbEngine) startSubTopic(topic pubsub.Topic, isConcurrent bool, job
 
 	getJobHandler := func(job *subJob, msg *pubsub.Message) asyncjob.JobHandler {
 		return func(ctx context.Context) error {
-			log.Printf("Running job[%s] - Value: %v", job.Name, msg.Data())
+			log.Printf("Run job[%s] - Value: %v", job.Name, msg.Data())
 			return job.Hdl(ctx, msg)
 		}
 	}
