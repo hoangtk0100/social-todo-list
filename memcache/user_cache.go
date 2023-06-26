@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hoangtk0100/app-context/component/cache"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
-	"github.com/hoangtk0100/social-todo-list/plugin/cache"
 )
 
 type RealUserStore interface {

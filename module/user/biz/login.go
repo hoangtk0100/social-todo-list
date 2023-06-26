@@ -2,10 +2,13 @@ package biz
 
 import (
 	"context"
+	"strconv"
 
+	"github.com/hoangtk0100/app-context/component/token"
+	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
-	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 )
 
 type LoginStorage interface {
@@ -13,41 +16,37 @@ type LoginStorage interface {
 }
 
 type loginBiz struct {
-	store         LoginStorage
-	tokenProvider tokenprovider.TokenProvider
-	hasher        Hasher
-	expiry        int
+	store      LoginStorage
+	tokenMaker core.TokenMakerComponent
 }
 
-func NewLoginBiz(store LoginStorage, tokenProvider tokenprovider.TokenProvider, hasher Hasher, expiry int) *loginBiz {
+func NewLoginBiz(store LoginStorage, tokenMaker core.TokenMakerComponent) *loginBiz {
 	return &loginBiz{
-		store:         store,
-		tokenProvider: tokenProvider,
-		hasher:        hasher,
-		expiry:        expiry,
+		store:      store,
+		tokenMaker: tokenMaker,
 	}
 }
 
-func (biz *loginBiz) Login(ctx context.Context, data *model.UserLogin) (tokenprovider.Token, error) {
+func (biz *loginBiz) Login(ctx context.Context, data *model.UserLogin) (*common.Token, error) {
 	user, err := biz.store.FindUser(ctx, map[string]interface{}{"email": data.Email})
 	if err != nil {
 		return nil, model.ErrEmailOrPasswordInvalid
 	}
 
-	hashedPassword := biz.hasher.Hash(data.Password + user.Salt)
-	if user.Password != hashedPassword {
+	err = util.CheckPassword(user.Password, "", user.Salt, data.Password)
+	if err != nil {
 		return nil, model.ErrEmailOrPasswordInvalid
 	}
 
-	payload := &common.TokenPayload{
-		UId:   user.Id,
-		URole: user.Role.String(),
-	}
-
-	accessToken, err := biz.tokenProvider.Generate(payload, biz.expiry)
+	accessToken, payload, err := biz.tokenMaker.CreateToken(token.AccessToken, strconv.Itoa(user.Id))
 	if err != nil {
 		return nil, common.ErrInternal(err)
 	}
 
-	return accessToken, nil
+	tokenResult := &common.Token{
+		AccessToken: accessToken,
+		ExpiredAt:   payload.ExpiredAt,
+	}
+
+	return tokenResult, nil
 }

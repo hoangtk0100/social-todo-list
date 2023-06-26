@@ -2,12 +2,12 @@ package subscriber
 
 import (
 	"context"
-	"log"
 
-	goservice "github.com/200Lab-Education/go-sdk"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/component/pubsub"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/common/asyncjob"
-	"github.com/hoangtk0100/social-todo-list/pubsub"
 )
 
 type subJob struct {
@@ -20,36 +20,42 @@ type GroupJob interface {
 }
 
 type pbEngine struct {
-	serviceCtx goservice.ServiceContext
+	name   string
+	ac     appctx.AppContext
+	logger appctx.Logger
 }
 
-func NewPBEngine(serviceCtx goservice.ServiceContext) *pbEngine {
-	return &pbEngine{serviceCtx: serviceCtx}
+func NewPBEngine(ac appctx.AppContext) *pbEngine {
+	return &pbEngine{
+		name: "pb-engine",
+		ac:   ac,
+	}
 }
 
 func (engine *pbEngine) Start() error {
+	engine.logger = engine.ac.Logger(engine.name)
 	engine.startSubTopic(common.TopicUserLikedItem, true,
-		IncreaseLikedCountAfterUserLikeItem(engine.serviceCtx),
+		IncreaseLikedCountAfterUserLikeItem(engine.ac),
 	)
 
 	engine.startSubTopic(common.TopicUserUnlikedItem, true,
-		DecreaseLikedCountAfterUserUnlikeItem(engine.serviceCtx),
+		DecreaseLikedCountAfterUserUnlikeItem(engine.ac),
 	)
 
 	return nil
 }
 
 func (engine *pbEngine) startSubTopic(topic pubsub.Topic, isConcurrent bool, jobs ...subJob) error {
-	ps := engine.serviceCtx.MustGet(common.PluginPubSub).(pubsub.PubSub)
+	ps := engine.ac.MustGet(common.PluginPubSub).(core.PubSubComponent)
 
 	c, _ := ps.Subscribe(context.Background(), topic)
 	for _, item := range jobs {
-		log.Println("Setup subscriber :", item.Name)
+		engine.logger.Info("Setup subscriber :", item.Name)
 	}
 
 	getJobHandler := func(job *subJob, msg *pubsub.Message) asyncjob.JobHandler {
 		return func(ctx context.Context) error {
-			log.Printf("Run job[%s] - Value: %v", job.Name, msg.Data())
+			engine.logger.Infof("Run job [%s] - Value: %v", job.Name, msg.Data())
 			return job.Hdl(ctx, msg)
 		}
 	}
@@ -66,7 +72,7 @@ func (engine *pbEngine) startSubTopic(topic pubsub.Topic, isConcurrent bool, job
 
 			group := asyncjob.NewGroup(isConcurrent, jobHdls...)
 			if err := group.Run(context.Background()); err != nil {
-				log.Println(err)
+				engine.logger.Error(err)
 			}
 		}
 	}()

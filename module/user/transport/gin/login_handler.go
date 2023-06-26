@@ -3,17 +3,16 @@ package ginuser
 import (
 	"net/http"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/biz"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 	"github.com/hoangtk0100/social-todo-list/module/user/storage"
-	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
-	"gorm.io/gorm"
 )
 
-func Login(serviceCtx goservice.ServiceContext) func(*gin.Context) {
+func Login(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginData model.UserLogin
 
@@ -21,18 +20,16 @@ func Login(serviceCtx goservice.ServiceContext) func(*gin.Context) {
 			panic(common.ErrInvalidRequest(err))
 		}
 
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
-		tokenProvider := serviceCtx.MustGet(common.PluginJWT).(tokenprovider.TokenProvider)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		tokenMaker := ac.MustGet(common.PluginJWT).(core.TokenMakerComponent)
 
 		store := storage.NewSQLStore(db)
-		md5 := common.NewMd5Hash()
-		expiry := 60 * 60 * 24 * 7
-		business := biz.NewLoginBiz(store, tokenProvider, md5, expiry)
-		token, err := business.Login(ctx.Request.Context(), &loginData)
+		business := biz.NewLoginBiz(store, tokenMaker)
+		tokenPayload, err := business.Login(ctx.Request.Context(), &loginData)
 		if err != nil {
 			panic(err)
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(token))
+		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(tokenPayload))
 	}
 }

@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 )
@@ -36,7 +37,12 @@ func (biz *registerBiz) Register(ctx context.Context, data *model.UserCreate) er
 
 	salt := common.GenSalt(50)
 
-	data.Password = biz.hasher.Hash(data.Password + salt)
+	var err error
+	data.Password, err = util.HashPassword("", salt, data.Password)
+	if err != nil {
+		return err
+	}
+
 	data.Salt = salt
 	data.Role = model.RoleUser.String()
 

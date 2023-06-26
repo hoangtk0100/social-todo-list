@@ -1,30 +1,29 @@
 package cmd
 
 import (
-	"log"
-
-	goservice "github.com/200Lab-Education/go-sdk"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/component/datastore/gormdb"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/plugin/datastore/gormdb"
 	"github.com/spf13/cobra"
-	"gorm.io/gorm"
 )
 
 var cronUpdateItemLikedCountCmd = &cobra.Command{
 	Use:   "update-count",
 	Short: "Update item liked count for all todo_items records",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := goservice.New(
-			goservice.WithName("social-todo-list"),
-			goservice.WithVersion("1.0.0"),
-			goservice.WithInitRunnable(gormdb.NewGormDB("main.mysql", common.PluginDBMain)),
+		service := appctx.NewAppContext(
+			appctx.WithName("social-todo-list"),
+			appctx.WithComponent(gormdb.NewGormDB("main.mysql", common.PluginDBMain)),
 		)
 
-		if err := service.Init(); err != nil {
-			log.Fatalln(err)
+		log := service.Logger("update-count-service")
+
+		if err := service.Load(); err != nil {
+			log.Fatal(err)
 		}
 
-		db := service.MustGet(common.PluginDBMain).(*gorm.DB)
+		db := service.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 
 		query := `UPDATE todo_items ti
 		INNER JOIN (
@@ -35,6 +34,6 @@ var cronUpdateItemLikedCountCmd = &cobra.Command{
 		SET ti.liked_count = c.count`
 
 		db.Exec(query)
-		log.Println("Updated item liked count")
+		log.Info("Updated item liked count")
 	},
 }

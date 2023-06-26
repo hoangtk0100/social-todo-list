@@ -3,13 +3,14 @@ package middleware
 import (
 	"context"
 	"errors"
+	"strconv"
 	"strings"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
-	"github.com/hoangtk0100/social-todo-list/plugin/tokenprovider"
 )
 
 const (
@@ -63,20 +64,21 @@ func extractTokenFromHeader(input string) (string, error) {
 	return parts[1], nil
 }
 
-func RequireAuth(store AuthenStore, serviceCtx goservice.ServiceContext) func(*gin.Context) {
+func RequireAuth(store AuthenStore, ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token, err := extractTokenFromHeader(ctx.GetHeader(authorizationHeaderKey))
 		if err != nil {
 			panic(err)
 		}
 
-		tokenProvider := serviceCtx.MustGet(common.PluginJWT).(tokenprovider.TokenProvider)
-		payload, err := tokenProvider.Validate(token)
+		tokenMaker := ac.MustGet(common.PluginJWT).(core.TokenMakerComponent)
+		payload, err := tokenMaker.VerifyToken(token)
 		if err != nil {
 			panic(err)
 		}
 
-		user, err := store.FindUser(ctx.Request.Context(), map[string]interface{}{"id": payload.UserId()})
+		userId, _ := strconv.Atoi(payload.UID)
+		user, err := store.FindUser(ctx.Request.Context(), map[string]interface{}{"id": userId})
 		if err != nil {
 			panic(err)
 		}

@@ -5,17 +5,17 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/200Lab-Education/go-sdk/logger"
 	"github.com/go-resty/resty/v2"
+	appctx "github.com/hoangtk0100/app-context"
 )
 
 type itemService struct {
 	client     *resty.Client
 	serviceURL string
-	logger     logger.Logger
+	logger     appctx.Logger
 }
 
-func NewItemService(serviceURL string, logger logger.Logger) *itemService {
+func NewItemService(serviceURL string, logger appctx.Logger) *itemService {
 	return &itemService{
 		client:     resty.New(),
 		serviceURL: serviceURL,
@@ -39,12 +39,12 @@ func (s *itemService) GetItemLikes(ctx context.Context, ids []int) (map[int]int,
 		Post(fmt.Sprintf("%s/%s", s.serviceURL, "v1/rpc/get_item_likes"))
 
 	if err != nil {
-		s.logger.Errorln(err)
+		s.logger.Error(err)
 		return nil, err
 	}
 
 	if !resp.IsSuccess() {
-		s.logger.Errorln(resp.RawResponse)
+		s.logger.Errorf(resp.Error().(error), resp.String())
 		return nil, errors.New("cannot call get item likes")
 	}
 

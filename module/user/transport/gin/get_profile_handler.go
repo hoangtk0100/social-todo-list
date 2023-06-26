@@ -8,7 +8,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 )
 
-func Profile() func(*gin.Context) {
+func Profile() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		user := ctx.MustGet(common.CurrentUser)
 

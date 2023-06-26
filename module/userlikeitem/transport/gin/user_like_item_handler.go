@@ -4,17 +4,16 @@ import (
 	"net/http"
 	"time"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/biz"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
-	"github.com/hoangtk0100/social-todo-list/pubsub"
-	"gorm.io/gorm"
 )
 
-func LikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
+func LikeItem(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
@@ -22,8 +21,8 @@ func LikeItem(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 		}
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
-		ps := serviceCtx.MustGet(common.PluginPubSub).(pubsub.PubSub)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		ps := ac.MustGet(common.PluginPubSub).(core.PubSubComponent)
 
 		store := storage.NewSQLStore(db)
 		business := biz.NewUserLikeItemBiz(store, ps)

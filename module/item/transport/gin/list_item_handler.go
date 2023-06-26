@@ -3,18 +3,18 @@ package ginitem
 import (
 	"net/http"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 	"github.com/hoangtk0100/social-todo-list/module/item/repository"
 	"github.com/hoangtk0100/social-todo-list/module/item/storage"
 	"github.com/hoangtk0100/social-todo-list/module/item/storage/rpc"
-	"gorm.io/gorm"
 )
 
-func ListItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
+func ListItem(ac appctx.AppContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var queryString struct {
 			common.Paging
@@ -28,13 +28,13 @@ func ListItem(serviceCtx goservice.ServiceContext) func(ctx *gin.Context) {
 		queryString.Paging.Process()
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
-		apiItemCaller := serviceCtx.MustGet(common.PluginItemAPI).(interface {
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		apiItemCaller := ac.MustGet(common.PluginItemAPI).(interface {
 			GetServiceURL() string
 		})
 
 		store := storage.NewSQLStore(db)
-		likeStore := rpc.NewItemService(apiItemCaller.GetServiceURL(), serviceCtx.Logger("rpc.itemlikes"))
+		likeStore := rpc.NewItemService(apiItemCaller.GetServiceURL(), ac.Logger("rpc.itemlikes"))
 		repo := repository.NewListItemRepo(store, likeStore, requester)
 		business := biz.NewListItemBiz(repo, requester)
 
