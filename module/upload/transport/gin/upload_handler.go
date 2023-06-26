@@ -4,21 +4,20 @@ import (
 	"mime/multipart"
 	"net/http"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/upload/biz"
 	"github.com/hoangtk0100/social-todo-list/module/upload/storage"
-	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
-	"gorm.io/gorm"
 )
 
-func Upload(serviceCtx goservice.ServiceContext) func(*gin.Context) {
+func Upload(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		_, dataBytes, folder, fileName, contentType := validateFiles(ctx)
 
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
-		provider := serviceCtx.MustGet(common.PluginR2).(uploadprovider.UploadProvider)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		provider := ac.MustGet(common.PluginR2).(core.StorageComponent)
 		store := storage.NewSQLStore(db)
 		business := biz.NewUploadBiz(store, provider)
 

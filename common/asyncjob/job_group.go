@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/util"
 )
 
 type group struct {
@@ -29,7 +29,7 @@ func (g *group) Run(ctx context.Context) error {
 		errChan := make(chan error, numJobs)
 		for _, jobIndex := range g.jobs {
 			go func(job Job) {
-				defer common.Recovery()
+				defer util.Recovery()
 
 				errChan <- g.runJob(ctx, job)
 				g.wg.Done()

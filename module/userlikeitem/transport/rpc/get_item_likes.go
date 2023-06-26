@@ -3,14 +3,14 @@ package rpcuserlikeitem
 import (
 	"net/http"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
-	"gorm.io/gorm"
 )
 
-func GetItemLikes(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
+func GetItemLikes(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		type requestData struct {
 			Ids []int `json:"ids"`
@@ -21,7 +21,7 @@ func GetItemLikes(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 			panic(common.ErrInvalidRequest(err))
 		}
 
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 		store := storage.NewSQLStore(db)
 
 		mapResult, err := store.GetItemLikes(ctx.Request.Context(), data.Ids)

@@ -16,9 +16,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/upload/model"
-	"github.com/hoangtk0100/social-todo-list/plugin/uploadprovider"
 )
 
 type CreateImageStorage interface {
@@ -27,10 +27,10 @@ type CreateImageStorage interface {
 
 type uploadBiz struct {
 	store    CreateImageStorage
-	provider uploadprovider.UploadProvider
+	provider core.StorageComponent
 }
 
-func NewUploadBiz(store CreateImageStorage, provider uploadprovider.UploadProvider) *uploadBiz {
+func NewUploadBiz(store CreateImageStorage, provider core.StorageComponent) *uploadBiz {
 	return &uploadBiz{store: store, provider: provider}
 }
 
@@ -45,18 +45,22 @@ func (biz *uploadBiz) Upload(ctx context.Context, data []byte, folder, fileName 
 	fileExt := filepath.Ext(fileName)
 	newFileName := fmt.Sprintf("%d.%s", time.Now().UTC().UnixNano(), fileName)
 	dst := fmt.Sprintf("%s/%s", folder, newFileName)
-	img, err := biz.provider.SaveUploadedFile(ctx, data, dst, contentType)
+	url, storageName, err := biz.provider.UploadFile(ctx, data, dst, contentType)
 	if err != nil {
 		return nil, model.ErrCannotSaveFile(err)
 	}
 
-	img.Name = fileName
-	img.Width = width
-	img.Height = height
-	img.Extension = getShortExtension(fileExt)
+	img := &common.Image{
+		Name:      fileName,
+		Width:     width,
+		Height:    height,
+		Extension: getShortExtension(fileExt),
+		Url:       url,
+		CloudName: storageName,
+	}
 
 	if err := biz.store.CreateImage(ctx, img); err != nil {
-		biz.provider.RemoveUploadedFile(ctx, dst)
+		biz.provider.DeleteFiles(ctx, []string{dst})
 		return nil, model.ErrCannotSaveFile(err)
 	}
 

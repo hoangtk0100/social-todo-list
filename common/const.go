@@ -1,6 +1,6 @@
 package common
 
-import "log"
+import "time"
 
 const (
 	CurrentUser        = "current_user"
@@ -11,6 +11,7 @@ const (
 	PluginItemAPI      = "item-api"
 	PluginTracerJaeger = "social-todo-jaeger"
 	PluginRedis        = "redis"
+	PluginGin          = "gin"
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"
@@ -23,23 +24,9 @@ const (
 	DBTypeItem DBType = 2
 )
 
-func Recovery() {
-	if r := recover(); r != nil {
-		log.Println("Recovered:", r)
-	}
-}
-
-type TokenPayload struct {
-	UId   int    `json:"user_id"`
-	URole string `json:"role"`
-}
-
-func (p TokenPayload) UserId() int {
-	return p.UId
-}
-
-func (p TokenPayload) Role() string {
-	return p.URole
+type Token struct {
+	AccessToken string    `json:"access_token"`
+	ExpiredAt   time.Time `json:"expired_at"`
 }
 
 type Requester interface {

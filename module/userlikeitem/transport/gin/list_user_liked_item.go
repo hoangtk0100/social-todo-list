@@ -3,15 +3,15 @@ package ginuserlikeitem
 import (
 	"net/http"
 
-	goservice "github.com/200Lab-Education/go-sdk"
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/biz"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/storage"
-	"gorm.io/gorm"
 )
 
-func ListLikedUsers(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
+func ListLikedUsers(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
@@ -25,7 +25,7 @@ func ListLikedUsers(serviceCtx goservice.ServiceContext) gin.HandlerFunc {
 
 		paging.Process()
 
-		db := serviceCtx.MustGet(common.PluginDBMain).(*gorm.DB)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 
 		store := storage.NewSQLStore(db)
 		business := biz.NewListUsersLikedItemBiz(store)

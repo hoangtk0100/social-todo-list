@@ -4,9 +4,10 @@ import (
 	"context"
 	"log"
 
+	"github.com/hoangtk0100/app-context/component/pubsub"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
-	"github.com/hoangtk0100/social-todo-list/pubsub"
 )
 
 type UserUnlikeItemStorage interface {
@@ -16,10 +17,10 @@ type UserUnlikeItemStorage interface {
 
 type userUnlikeItemBiz struct {
 	store UserUnlikeItemStorage
-	ps    pubsub.PubSub
+	ps    core.PubSubComponent
 }
 
-func NewUserUnlikeItemBiz(store UserUnlikeItemStorage, ps pubsub.PubSub) *userUnlikeItemBiz {
+func NewUserUnlikeItemBiz(store UserUnlikeItemStorage, ps core.PubSubComponent) *userUnlikeItemBiz {
 	return &userUnlikeItemBiz{store: store, ps: ps}
 }
 

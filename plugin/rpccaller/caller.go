@@ -1,55 +1,37 @@
 package rpccaller
 
 import (
-	"flag"
-
-	"github.com/200Lab-Education/go-sdk/logger"
+	appctx "github.com/hoangtk0100/app-context"
+	"github.com/spf13/pflag"
 )
 
 type apiItemCaller struct {
-	name       string
+	id         string
 	serviceURL string
-	logger     logger.Logger
+	logger     appctx.Logger
 }
 
-func NewApiItemCaller(name string) *apiItemCaller {
-	return &apiItemCaller{name: name}
+func NewApiItemCaller(id string) *apiItemCaller {
+	return &apiItemCaller{id: id}
+}
+
+func (c *apiItemCaller) ID() string {
+	return c.id
+}
+
+func (c *apiItemCaller) InitFlags() {
+	pflag.StringVar(&c.serviceURL, "item-service-url", "http://localhost:9091", "URL of item service")
+}
+
+func (c *apiItemCaller) Run(ac appctx.AppContext) error {
+	c.logger = ac.Logger("api.item")
+	return nil
+}
+
+func (c *apiItemCaller) Stop() error {
+	return nil
 }
 
 func (c *apiItemCaller) GetServiceURL() string {
 	return c.serviceURL
-}
-
-func (c *apiItemCaller) GetPrefix() string {
-	return c.name
-}
-
-func (c *apiItemCaller) Get() interface{} {
-	return c
-}
-
-func (c *apiItemCaller) Name() string {
-	return c.name
-}
-
-func (c *apiItemCaller) InitFlags() {
-	flag.StringVar(&c.serviceURL, "item-service-url", "http://localhost:9091", "URL of item service")
-}
-
-func (c *apiItemCaller) Configure() error {
-	c.logger = logger.GetCurrent().GetLogger("api.item")
-
-	return nil
-}
-
-func (c *apiItemCaller) Run() error {
-	return nil
-}
-
-func (c *apiItemCaller) Stop() <-chan bool {
-	ch := make(chan bool)
-	go func() {
-		ch <- true
-	}()
-	return ch
 }
