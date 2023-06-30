@@ -2,8 +2,8 @@ package biz
 
 import (
 	"context"
-	"errors"
 
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
@@ -27,21 +27,33 @@ func NewUpdateItemBiz(store UpdateItemStorage, requester common.Requester) *upda
 
 func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate *model.TodoItemUpdate) error {
 	data, err := biz.store.GetItem(ctx, map[string]interface{}{"id": id})
-
 	if err != nil {
-		return common.ErrCannotGetEntity(model.EntityName, err)
+		if core.ErrNotFound.Is(err) {
+			return core.ErrNotFound.
+				WithDebug(err.Error())
+		}
+
+		return core.ErrInternalServerError.
+			WithError(model.ErrCannotGetItem.Error()).
+			WithDebug(err.Error())
 	}
 
 	if data.Status == "Deleted" {
-		return model.ErrItemIsDeleted
+		return core.ErrInternalServerError.
+			WithError(model.ErrItemDeleted.Error()).
+			WithDebug(err.Error())
 	}
 
 	if !common.IsOwner(biz.requester, data.UserId) && !common.IsAdmin(biz.requester) {
-		return common.ErrNoPermission(errors.New("you have no permission"))
+		return core.ErrForbidden.
+			WithError(model.ErrRequesterIsNotOwner.Error()).
+			WithDebug(err.Error())
 	}
 
 	if err := biz.store.UpdateItem(ctx, map[string]interface{}{"id": id}, dataUpdate); err != nil {
-		return common.ErrCannotUpdateEntity(model.EntityName, err)
+		return core.ErrInternalServerError.
+			WithError(model.ErrCannotUpdateItem.Error()).
+			WithDebug(err.Error())
 	}
 
 	return nil

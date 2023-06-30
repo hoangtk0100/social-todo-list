@@ -1,8 +1,6 @@
 package ginitem
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -17,7 +15,8 @@ func CreateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		var itemData model.TodoItemCreation
 
 		if err := ctx.ShouldBind(&itemData); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
@@ -28,9 +27,10 @@ func CreateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		business := biz.NewCreateItemBiz(store)
 
 		if err := business.CreateNewItem(ctx.Request.Context(), &itemData); err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(itemData.Id))
+		core.SuccessResponse(ctx, core.NewDataResponse(itemData.Id))
 	}
 }

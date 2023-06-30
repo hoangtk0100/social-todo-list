@@ -1,8 +1,6 @@
 package ginitem
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -22,7 +20,8 @@ func ListItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		}
 
 		if err := ctx.ShouldBind(&queryString); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		queryString.Paging.Process()
@@ -39,15 +38,15 @@ func ListItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		business := biz.NewListItemBiz(repo, requester)
 
 		result, err := business.ListItem(ctx.Request.Context(), &queryString.Filter, &queryString.Paging)
-
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
 		for index := range result {
 			result[index].Mask()
 		}
 
-		ctx.JSON(http.StatusOK, common.NewSuccessResponse(result, queryString.Paging, queryString.Filter))
+		core.SuccessResponse(ctx, core.NewResponse(result, queryString.Paging, queryString.Filter))
 	}
 }

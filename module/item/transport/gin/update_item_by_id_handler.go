@@ -1,8 +1,6 @@
 package ginitem
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -16,12 +14,18 @@ func UpdateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.
+				WithError(model.ErrItemIdInvalid.Error()).
+				WithDebug(err.Error()),
+			)
+
+			return
 		}
 
 		var data model.TodoItemUpdate
 		if err := ctx.ShouldBind(&data); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
@@ -30,9 +34,10 @@ func UpdateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		business := biz.NewUpdateItemBiz(store, requester)
 
 		if err := business.UpdateItemById(ctx.Request.Context(), int(id.GetLocalID()), &data); err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
+		core.SuccessResponse(ctx, core.NewDataResponse(true))
 	}
 }

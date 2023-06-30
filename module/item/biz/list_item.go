@@ -3,6 +3,7 @@ package biz
 import (
 	"context"
 
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
@@ -32,9 +33,10 @@ func (biz *listItemBiz) ListItem(ctx context.Context,
 	newCtx := context.WithValue(ctx, common.CurrentUser, biz.requester)
 
 	data, err := biz.repo.ListItem(newCtx, filter, paging, "Owner")
-
 	if err != nil {
-		return nil, common.ErrCannotListEntity(model.EntityName, err)
+		return nil, core.ErrInternalServerError.
+			WithError(model.ErrCannotGetItems.Error()).
+			WithDebug(err.Error())
 	}
 
 	return data, nil

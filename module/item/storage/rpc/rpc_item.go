@@ -2,11 +2,12 @@ package rpc
 
 import (
 	"context"
-	"errors"
+
 	"fmt"
 
 	"github.com/go-resty/resty/v2"
 	appctx "github.com/hoangtk0100/app-context"
+	"github.com/pkg/errors"
 )
 
 type itemService struct {
@@ -40,12 +41,13 @@ func (s *itemService) GetItemLikes(ctx context.Context, ids []int) (map[int]int,
 
 	if err != nil {
 		s.logger.Error(err)
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	if !resp.IsSuccess() {
-		s.logger.Errorf(resp.Error().(error), resp.String())
-		return nil, errors.New("cannot call get item likes")
+		respErr := resp.Error().(error)
+		s.logger.Errorf(respErr, resp.String())
+		return nil, errors.WithStack(respErr)
 	}
 
 	return response.Data, nil
