@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 )
 
@@ -16,12 +16,12 @@ func (store *sqlStore) CreateUser(ctx context.Context, data *model.UserCreate) e
 
 	if err := db.Table(data.TableName()).Create(data).Error; err != nil {
 		db.Rollback()
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	if err := db.Commit().Error; err != nil {
 		db.Rollback()
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	return nil

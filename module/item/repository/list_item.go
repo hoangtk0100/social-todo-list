@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
@@ -40,7 +41,9 @@ func (repo *listItemRepo) ListItem(
 
 	data, err := repo.store.ListItem(newCtx, filter, paging, moreKeys...)
 	if err != nil {
-		return nil, common.ErrCannotListEntity(model.EntityName, err)
+		return nil, core.ErrInternalServerError.
+			WithError(model.ErrCannotGetItems.Error()).
+			WithDebug(err.Error())
 	}
 
 	if len(data) == 0 {

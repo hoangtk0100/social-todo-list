@@ -6,6 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/hoangtk0100/app-context v0.0.0-20230626085519-ea26d1349e0a
+	github.com/pkg/errors v0.9.1
+	github.com/rs/zerolog v1.29.1
 	golang.org/x/net v0.10.0
 	gorm.io/gorm v1.25.2-0.20230530020048-26663ab9bf55
 )
@@ -41,9 +43,7 @@ require (
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/o1egl/paseto v1.0.0 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
-	github.com/rs/zerolog v1.29.1 // indirect
 	github.com/spf13/afero v1.6.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
 
@@ -25,7 +25,9 @@ func (biz *createItemBiz) CreateNewItem(ctx context.Context, data *model.TodoIte
 	}
 
 	if err := biz.store.CreateItem(ctx, data); err != nil {
-		return common.ErrCannotCreateEntity(model.EntityName, err)
+		return core.ErrInternalServerError.
+			WithError(model.ErrCannotCreateItem.Error()).
+			WithDebug(err.Error())
 	}
 
 	return nil

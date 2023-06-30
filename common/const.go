@@ -15,6 +15,8 @@ const (
 
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"
+
+	HashPasswordFormat = "%s.%s"
 )
 
 type DBType int

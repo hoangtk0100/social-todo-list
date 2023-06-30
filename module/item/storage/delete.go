@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 )
 
@@ -19,7 +19,7 @@ func (store *sqlStore) DeleteItem(ctx context.Context, cond map[string]interface
 		Updates(map[string]interface{}{
 			"status": deletedStatus,
 		}).Error; err != nil {
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	return nil

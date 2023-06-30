@@ -1,8 +1,6 @@
 package rpcuserlikeitem
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -18,7 +16,8 @@ func GetItemLikes(ac appctx.AppContext) gin.HandlerFunc {
 
 		var data requestData
 		if err := ctx.ShouldBind(&data); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
@@ -26,9 +25,10 @@ func GetItemLikes(ac appctx.AppContext) gin.HandlerFunc {
 
 		mapResult, err := store.GetItemLikes(ctx.Request.Context(), data.Ids)
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(mapResult))
+		core.SuccessResponse(ctx, core.NewDataResponse(mapResult))
 	}
 }

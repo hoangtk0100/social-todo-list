@@ -1,8 +1,6 @@
 package ginuser
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -17,19 +15,20 @@ func Register(ac appctx.AppContext) gin.HandlerFunc {
 		var data model.UserCreate
 
 		if err := ctx.ShouldBind(&data); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 
 		store := storage.NewSQLStore(db)
-		md5 := common.NewMd5Hash()
-		business := biz.NewRegisterBiz(store, md5)
+		business := biz.NewRegisterBiz(store)
 
 		if err := business.Register(ctx.Request.Context(), &data); err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(data.Id))
+		core.SuccessResponse(ctx, core.NewDataResponse(data.Id))
 	}
 }

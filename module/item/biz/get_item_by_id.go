@@ -3,7 +3,7 @@ package biz
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 )
 
@@ -21,9 +21,15 @@ func NewGetItemBiz(store GetItemStorage) *getItemBiz {
 
 func (biz *getItemBiz) GetItemById(ctx context.Context, id int) (*model.TodoItem, error) {
 	data, err := biz.store.GetItem(ctx, map[string]interface{}{"id": id})
-
 	if err != nil {
-		return nil, common.ErrCannotGetEntity(model.EntityName, err)
+		if core.ErrNotFound.Is(err) {
+			return nil, core.ErrNotFound.
+				WithDebug(err.Error())
+		}
+
+		return nil, core.ErrInternalServerError.
+			WithError(model.ErrCannotGetItem.Error()).
+			WithDebug(err.Error())
 	}
 
 	return data, nil

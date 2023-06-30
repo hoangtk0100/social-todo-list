@@ -9,7 +9,6 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
-	"log"
 	"mime/multipart"
 	"path/filepath"
 	"strings"
@@ -19,6 +18,7 @@ import (
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/upload/model"
+	"github.com/rs/zerolog/log"
 )
 
 type CreateImageStorage interface {
@@ -39,7 +39,7 @@ func (biz *uploadBiz) Upload(ctx context.Context, data []byte, folder, fileName 
 
 	width, height, err := getImageDimension(fileBytes)
 	if err != nil {
-		return nil, model.ErrFileNotImage(err)
+		return nil, core.ErrBadRequest.WithError(model.ErrFileNotImage.Error()).WithDebug(err.Error())
 	}
 
 	fileExt := filepath.Ext(fileName)
@@ -47,7 +47,7 @@ func (biz *uploadBiz) Upload(ctx context.Context, data []byte, folder, fileName 
 	dst := fmt.Sprintf("%s/%s", folder, newFileName)
 	url, storageName, err := biz.provider.UploadFile(ctx, data, dst, contentType)
 	if err != nil {
-		return nil, model.ErrCannotSaveFile(err)
+		return nil, core.ErrBadRequest.WithError(model.ErrCannotSaveFile.Error()).WithDebug(err.Error())
 	}
 
 	img := &common.Image{
@@ -61,7 +61,7 @@ func (biz *uploadBiz) Upload(ctx context.Context, data []byte, folder, fileName 
 
 	if err := biz.store.CreateImage(ctx, img); err != nil {
 		biz.provider.DeleteFiles(ctx, []string{dst})
-		return nil, model.ErrCannotSaveFile(err)
+		return nil, core.ErrBadRequest.WithError(model.ErrCannotSaveFile.Error()).WithDebug(err.Error())
 	}
 
 	return img, nil
@@ -72,14 +72,14 @@ func (biz *uploadBiz) UploadLocal(ctx context.Context, fileHeader *multipart.Fil
 
 	width, height, err := getImageDimension(fileBytes)
 	if err != nil {
-		return nil, model.ErrFileNotImage(err)
+		return nil, core.ErrBadRequest.WithError(model.ErrFileNotImage.Error()).WithDebug(err.Error())
 	}
 
 	fileExt := filepath.Ext(fileName)
 	dst := fmt.Sprintf("static/%d.%s", time.Now().UTC().UnixNano(), fileName)
 
 	if err := ctx.(*gin.Context).SaveUploadedFile(fileHeader, dst); err != nil {
-		return nil, model.ErrCannotSaveFile(err)
+		return nil, core.ErrBadRequest.WithError(model.ErrCannotSaveFile.Error()).WithDebug(err.Error())
 	}
 
 	img := &common.Image{
@@ -101,7 +101,7 @@ func getShortExtension(ext string) string {
 func getImageDimension(reader io.Reader) (int, int, error) {
 	img, _, err := image.DecodeConfig(reader)
 	if err != nil {
-		log.Println("err:", err)
+		log.Error().Err(err).Msg(model.ErrCannotGetFileDimension.Error())
 		return 0, 0, err
 	}
 

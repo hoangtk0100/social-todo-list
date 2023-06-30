@@ -5,6 +5,7 @@ import (
 
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"golang.org/x/net/context"
 )
@@ -35,7 +36,7 @@ func (store *sqlStore) ListItem(
 	}
 
 	if err := db.Select("id").Count(&paging.Total).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	for _, value := range moreKeys {
@@ -45,7 +46,7 @@ func (store *sqlStore) ListItem(
 	if cursor := strings.TrimSpace(paging.FakeCursor); cursor != "" {
 		id, err := common.UIDFromBase58(cursor)
 		if err != nil {
-			return nil, common.ErrDB(err)
+			return nil, errors.WithStack(err)
 		}
 
 		db = db.Where("id < ?", id.GetLocalID())
@@ -58,7 +59,7 @@ func (store *sqlStore) ListItem(
 		Order("id desc").
 		Limit(paging.Limit).
 		Find(&result).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	size := len(result)

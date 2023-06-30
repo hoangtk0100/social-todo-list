@@ -1,8 +1,6 @@
 package ginuser
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
@@ -17,7 +15,8 @@ func Login(ac appctx.AppContext) gin.HandlerFunc {
 		var loginData model.UserLogin
 
 		if err := ctx.ShouldBind(&loginData); err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
+			return
 		}
 
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
@@ -27,9 +26,10 @@ func Login(ac appctx.AppContext) gin.HandlerFunc {
 		business := biz.NewLoginBiz(store, tokenMaker)
 		tokenPayload, err := business.Login(ctx.Request.Context(), &loginData)
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(tokenPayload))
+		core.SuccessResponse(ctx, core.NewDataResponse(tokenPayload))
 	}
 }

@@ -1,7 +1,6 @@
 package ginuserlikeitem
 
 import (
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +16,12 @@ func LikeItem(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := common.UIDFromBase58(ctx.Param("id"))
 		if err != nil {
-			panic(common.ErrInvalidRequest(err))
+			core.ErrorResponse(ctx, core.ErrBadRequest.
+				WithError(model.ErrItemIdInvalid.Error()).
+				WithDebug(err.Error()),
+			)
+
+			return
 		}
 
 		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
@@ -33,9 +37,10 @@ func LikeItem(ac appctx.AppContext) gin.HandlerFunc {
 			ItemId:    int(id.GetLocalID()),
 			CreatedAt: &now,
 		}); err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			return
 		}
 
-		ctx.JSON(http.StatusOK, common.SimpleSuccessResponse(true))
+		core.SuccessResponse(ctx, core.NewDataResponse(true))
 	}
 }

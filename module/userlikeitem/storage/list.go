@@ -8,6 +8,7 @@ import (
 	"github.com/btcsuite/btcutil/base58"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 )
 
@@ -24,13 +25,13 @@ func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common
 	db := store.db.Table(model.Like{}.TableName()).Where("item_id = ?", itemId)
 
 	if err := db.Select("user_id").Count(&paging.Total).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	if cursor := strings.TrimSpace(paging.FakeCursor); cursor != "" {
 		createdTime, err := time.Parse(timeLayout, string(base58.Decode(cursor)))
 		if err != nil {
-			return nil, common.ErrDB(err)
+			return nil, errors.WithStack(err)
 		}
 
 		db = db.Where("created_at < ?", createdTime.Format(timeDBLayout))
@@ -43,7 +44,7 @@ func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common
 		Limit(paging.Limit).
 		Preload("User").
 		Find(&result).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	size := len(result)
@@ -78,7 +79,7 @@ func (store *sqlStore) GetItemLikes(ctx context.Context, ids []int) (map[int]int
 		Where("item_id in (?)", ids).
 		Group("item_id").
 		Find(&likes).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	for _, item := range likes {

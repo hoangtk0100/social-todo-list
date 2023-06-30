@@ -3,8 +3,8 @@ package storage
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 )
@@ -14,7 +14,7 @@ func (store *sqlStore) UpdateItem(ctx context.Context, cond map[string]interface
 	defer span.End()
 
 	if err := store.db.Where(cond).Updates(dataUpdate).Error; err != nil {
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -28,7 +28,7 @@ func (store *sqlStore) IncreaseLikedCount(ctx context.Context, id int) error {
 		Where("id = ?", id).
 		Update("liked_count", gorm.Expr("liked_count + ?", 1)).
 		Error; err != nil {
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -42,7 +42,7 @@ func (store *sqlStore) DecreaseLikedCount(ctx context.Context, id int) error {
 		Where("id = ?", id).
 		Update("liked_count", gorm.Expr("liked_count - ?", 1)).
 		Error; err != nil {
-		return common.ErrDB(err)
+		return errors.WithStack(err)
 	}
 
 	return nil
