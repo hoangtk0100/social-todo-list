@@ -1,27 +1,11 @@
 package model
 
-import "github.com/hoangtk0100/social-todo-list/common"
+import "errors"
 
-func ErrCannotLikeItem(err error) *common.AppError {
-	return common.NewCustomError(
-		err,
-		"Cannot like this item",
-		"ErrCannotLikeItem",
-	)
-}
-
-func ErrCannotUnlikeItem(err error) *common.AppError {
-	return common.NewCustomError(
-		err,
-		"Cannot unlike this item",
-		"ErrCannotUnlikeItem",
-	)
-}
-
-func ErrDidNotLikeItem(err error) *common.AppError {
-	return common.NewCustomError(
-		err,
-		"You have not liked this item",
-		"ErrDidNotLikeItem",
-	)
-}
+var (
+	ErrCannotLikeItem       = errors.New("cannot like this item")
+	ErrCannotUnlikeItem     = errors.New("cannot unlike this item")
+	ErrDidNotLikeItem       = errors.New("you have not liked this item")
+	ErrItemIdInvalid        = errors.New("invalid TODO id")
+	ErrCannotListLikedUsers = errors.New("cannot list users liked item")
+)

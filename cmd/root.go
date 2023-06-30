@@ -22,6 +22,7 @@ import (
 	rpcuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/rpc"
 	"github.com/hoangtk0100/social-todo-list/subscriber"
 
+	acmiddleware "github.com/hoangtk0100/app-context/component/server/gin/middleware"
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
@@ -57,7 +58,7 @@ var rootCmd = &cobra.Command{
 
 		server := service.MustGet(common.PluginGin).(core.GinComponent)
 		router := server.GetRouter()
-		router.Use(middleware.Recover())
+		router.Use(acmiddleware.Recovery(service))
 
 		db := service.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 

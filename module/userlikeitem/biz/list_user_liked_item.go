@@ -3,8 +3,9 @@ package biz
 import (
 	"context"
 
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/module/upload/model"
+	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
 )
 
 type ListUsersLikedItemStorage interface {
@@ -22,7 +23,9 @@ func NewListUsersLikedItemBiz(store ListUsersLikedItemStorage) *listUsersLikedIt
 func (biz *listUsersLikedItemBiz) ListUsersLikedItem(ctx context.Context, itemId int, paging *common.Paging) ([]common.SimpleUser, error) {
 	result, err := biz.store.ListUsers(ctx, itemId, paging)
 	if err != nil {
-		return nil, common.ErrCannotListEntity(model.EntityName, err)
+		return nil, core.ErrInternalServerError.
+			WithError(model.ErrCannotListLikedUsers.Error()).
+			WithDebug(err.Error())
 	}
 
 	return result, nil

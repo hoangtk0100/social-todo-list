@@ -39,9 +39,8 @@ func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate
 	}
 
 	if data.Status == "Deleted" {
-		return core.ErrInternalServerError.
-			WithError(model.ErrItemDeleted.Error()).
-			WithDebug(err.Error())
+		return core.ErrBadRequest.
+			WithError(model.ErrItemDeleted.Error())
 	}
 
 	if !common.IsOwner(biz.requester, data.UserId) && !common.IsAdmin(biz.requester) {
