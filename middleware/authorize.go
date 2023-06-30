@@ -18,29 +18,12 @@ const (
 	authorizationTypeBearer = "bearer"
 )
 
-func ErrAuthHeaderEmpty(err error) *common.AppError {
-	return common.NewCustomError(
-		err,
-		"authorization header is not provided",
-		"ErrAuthHeaderEmpty",
-	)
-}
-
-func ErrAuthHeaderInvalidFormat(err error) *common.AppError {
-	return common.NewUnauthorized(
-		err,
-		"invalid authorization header format",
-		"ErrAuthHeaderInvalidFormat",
-	)
-}
-
-func ErrAuthHeaderUnsupportedType(err error) *common.AppError {
-	return common.NewUnauthorized(
-		err,
-		"unsupported authorization type",
-		"ErrAuthHeaderUnsupportedType",
-	)
-}
+var (
+	ErrAuthHeaderEmpty           = errors.New("authorization header is not provided")
+	ErrAuthHeaderInvalidFormat   = errors.New("invalid authorization header format")
+	ErrAuthHeaderUnsupportedType = errors.New("unsupported authorization type")
+	ErrUserDeletedOrBanned       = errors.New("user has been deleted or banned")
+)
 
 type AuthenStore interface {
 	FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*model.User, error)
@@ -48,17 +31,17 @@ type AuthenStore interface {
 
 func extractTokenFromHeader(input string) (string, error) {
 	if len(input) == 0 {
-		return "", ErrAuthHeaderEmpty(nil)
+		return "", ErrAuthHeaderEmpty
 	}
 
 	parts := strings.Fields(input)
 	if len(parts) < 2 {
-		return "", ErrAuthHeaderInvalidFormat(nil)
+		return "", ErrAuthHeaderInvalidFormat
 	}
 
 	authorizationType := strings.ToLower(parts[0])
 	if authorizationType != authorizationTypeBearer {
-		return "", ErrAuthHeaderUnsupportedType(nil)
+		return "", ErrAuthHeaderUnsupportedType
 	}
 
 	return parts[1], nil
@@ -68,23 +51,31 @@ func RequireAuth(store AuthenStore, ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token, err := extractTokenFromHeader(ctx.GetHeader(authorizationHeaderKey))
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, core.ErrUnauthorized.WithError(err.Error()))
+			ctx.Abort()
+			return
 		}
 
 		tokenMaker := ac.MustGet(common.PluginJWT).(core.TokenMakerComponent)
 		payload, err := tokenMaker.VerifyToken(token)
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, core.ErrUnauthorized.WithError(err.Error()).WithDebug(err.Error()))
+			ctx.Abort()
+			return
 		}
 
 		userId, _ := strconv.Atoi(payload.UID)
 		user, err := store.FindUser(ctx.Request.Context(), map[string]interface{}{"id": userId})
 		if err != nil {
-			panic(err)
+			core.ErrorResponse(ctx, err)
+			ctx.Abort()
+			return
 		}
 
 		if user.Status == 0 {
-			panic(common.ErrNoPermission(errors.New("user has been deleted or banned")))
+			core.ErrorResponse(ctx, core.ErrForbidden.WithError(ErrUserDeletedOrBanned.Error()))
+			ctx.Abort()
+			return
 		}
 
 		ctx.Set(common.CurrentUser, user)
