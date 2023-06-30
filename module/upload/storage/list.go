@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 )
 
@@ -21,7 +22,7 @@ func (store *sqlStore) ListImages(
 		Table(common.Image{}.TableName()).
 		Where("id in ?", ids).
 		Find(&result).Error; err != nil {
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return result, nil
