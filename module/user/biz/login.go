@@ -30,17 +30,23 @@ func NewLoginBiz(store LoginStorage, tokenMaker core.TokenMakerComponent) *login
 func (biz *loginBiz) Login(ctx context.Context, data *model.UserLogin) (*common.Token, error) {
 	user, err := biz.store.FindUser(ctx, map[string]interface{}{"email": data.Email})
 	if err != nil {
-		return nil, model.ErrEmailOrPasswordInvalid
+		return nil, core.ErrBadRequest.
+			WithError(model.ErrEmailOrPasswordInvalid.Error()).
+			WithDebug(err.Error())
 	}
 
-	err = util.CheckPassword(user.Password, "", user.Salt, data.Password)
+	err = util.CheckPassword(user.Password, common.HashPasswordFormat, user.Salt, data.Password)
 	if err != nil {
-		return nil, model.ErrEmailOrPasswordInvalid
+		return nil, core.ErrBadRequest.
+			WithError(model.ErrEmailOrPasswordInvalid.Error()).
+			WithDebug(err.Error())
 	}
 
 	accessToken, payload, err := biz.tokenMaker.CreateToken(token.AccessToken, strconv.Itoa(user.Id))
 	if err != nil {
-		return nil, common.ErrInternal(err)
+		return nil, core.ErrInternalServerError.
+			WithError(model.ErrEmailOrPasswordInvalid.Error()).
+			WithDebug(err.Error())
 	}
 
 	tokenResult := &common.Token{

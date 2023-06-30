@@ -3,8 +3,9 @@ package storage
 import (
 	"context"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
+	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
 	"gorm.io/gorm"
 )
@@ -21,10 +22,10 @@ func (store *sqlStore) FindUser(ctx context.Context, conds map[string]interface{
 	var user model.User
 	if err := db.Where(conds).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return nil, common.RecordNotFound
+			return nil, core.ErrNotFound
 		}
 
-		return nil, common.ErrDB(err)
+		return nil, errors.WithStack(err)
 	}
 
 	return &user, nil
