@@ -1,8 +1,10 @@
 # Social TODO Service with Clean Architecture in Microservices
 
-This project is a Social TODO Service implemented using the Go programming language, Gin framework, and follows the principles of Clean Architecture. 
+This project is a Social TODO Service implemented using the Go programming language, Gin framework, and follows the
+principles of Clean Architecture.
 
-It utilizes various technologies and services to provide a robust and scalable solution. The key technologies and services used in this project are:
+It utilizes various technologies and services to provide a robust and scalable solution. The key technologies and
+services used in this project are:
 
 - **Go Gin**: A lightweight web framework for building RESTful APIs in Go.
 - **Pub/Sub with NATS**: A messaging system for building distributed systems and microservices architecture.
@@ -24,19 +26,31 @@ The Social TODO Service offers the following features:
 
 The Social TODO Service follows a layered architecture pattern consisting of the following components:
 
-- **Transport/Handler**: This layer is responsible for handling incoming HTTP requests and parsing the request data into the desired struct format for the Business layer. It acts as a bridge between the external world and the business logic.
+- **Transport/Handler**: This layer is responsible for handling incoming HTTP requests and parsing the request data into
+  the desired struct format for the Business layer. It acts as a bridge between the external world and the business
+  logic.
 
-- **Business**: The Business layer receives input from the Transport/Handler layer and implements the business logic of the application. It performs necessary computations, validations, and business-specific operations according to the defined use cases. It generates the appropriate response and communicates with the Repository layer if needed.
+- **Business**: The Business layer receives input from the Transport/Handler layer and implements the business logic of
+  the application. It performs necessary computations, validations, and business-specific operations according to the
+  defined use cases. It generates the appropriate response and communicates with the Repository layer if needed.
 
-- **Repository (optional)**: The Repository layer serves as an intermediary between the Business layer and the Storage layer. It consolidates data from various sources, performs data transformations, and provides the data in the desired structure for the Business layer. It abstracts the details of specific data sources and provides a unified interface for data access.
+- **Repository**: The Repository layer represents the data layer of the application, responsible for communicating with
+  specific database engines. It handles the actual storage and retrieval of data, interacting with databases such as
+  MySQL, Redis, or Cloudflare R2. It provides an interface to perform CRUD (Create, Read, Update, Delete) operations on
+  the data.
 
-- **Storage**: The Storage layer represents the data layer of the application, responsible for communicating with specific database engines. It handles the actual storage and retrieval of data, interacting with databases such as MySQL, Redis, or Cloudflare R2. It provides an interface to perform CRUD (Create, Read, Update, Delete) operations on the data.
+The overall flow in the architecture is as follows:
+the Transport/Handler layer receives requests, parses them into the appropriate struct format, and passes them to the
+Business layer. The Business layer processes the requests, performs necessary computations and business logic, and
+generates responses. If required, the Business layer can interact with the Repository layer to retrieve or store data.
+The Repository layer, if present, acts as a data aggregator and transformer. Finally, the Repository layer handles the
+actual data storage and retrieval operations.
 
-The overall flow in the architecture is as follows: 
-the Transport/Handler layer receives requests, parses them into the appropriate struct format, and passes them to the Business layer. The Business layer processes the requests, performs necessary computations and business logic, and generates responses. If required, the Business layer can interact with the Repository layer to retrieve or store data. The Repository layer, if present, acts as a data aggregator and transformer. Finally, the Storage layer handles the actual data storage and retrieval operations.
-
-This architecture promotes separation of concerns, modularization, and maintainability by decoupling the different layers and their responsibilities. Each layer has a specific role and can be developed, tested, and scaled independently.
+This architecture promotes separation of concerns, modularization, and maintainability by decoupling the different
+layers and their responsibilities. Each layer has a specific role and can be developed, tested, and scaled
+independently.
 
 ## Contribution
 
-Contributions to this project are welcome! If you find any issues or have ideas for enhancements, feel free to open an issue or submit a pull request. Please follow the project's guidelines for contribution and code formatting.
+Contributions to this project are welcome! If you find any issues or have ideas for enhancements, feel free to open an
+issue or submit a pull request. Please follow the project's guidelines for contribution and code formatting.

@@ -7,7 +7,7 @@ import (
 	"github.com/hoangtk0100/app-context/component/pubsub"
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/module/item/storage"
+	"github.com/hoangtk0100/social-todo-list/services/item/repository/mysql"
 )
 
 type HasItemID interface {
@@ -22,7 +22,7 @@ func IncreaseLikedCountAfterUserLikeItem(ac appctx.AppContext) core.SubJob {
 			data := msg.Data().(map[string]interface{})
 			itemID := data["item_id"].(float64)
 
-			if err := storage.NewSQLStore(db).IncreaseLikedCount(ctx, int(itemID)); err != nil {
+			if err := mysql.NewMySQLRepository(db).IncreaseLikedCount(ctx, int(itemID)); err != nil {
 				return err
 			}
 

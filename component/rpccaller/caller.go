@@ -5,33 +5,33 @@ import (
 	"github.com/spf13/pflag"
 )
 
-type apiItemCaller struct {
+type itemAPICaller struct {
 	id         string
 	serviceURL string
 	logger     appctx.Logger
 }
 
-func NewApiItemCaller(id string) *apiItemCaller {
-	return &apiItemCaller{id: id}
+func NewitemAPICaller(id string) *itemAPICaller {
+	return &itemAPICaller{id: id}
 }
 
-func (c *apiItemCaller) ID() string {
+func (c *itemAPICaller) ID() string {
 	return c.id
 }
 
-func (c *apiItemCaller) InitFlags() {
+func (c *itemAPICaller) InitFlags() {
 	pflag.StringVar(&c.serviceURL, "item-service-url", "http://localhost:9091", "URL of item service")
 }
 
-func (c *apiItemCaller) Run(ac appctx.AppContext) error {
+func (c *itemAPICaller) Run(ac appctx.AppContext) error {
 	c.logger = ac.Logger("api.item")
 	return nil
 }
 
-func (c *apiItemCaller) Stop() error {
+func (c *itemAPICaller) Stop() error {
 	return nil
 }
 
-func (c *apiItemCaller) GetServiceURL() string {
+func (c *itemAPICaller) GetServiceURL() string {
 	return c.serviceURL
 }
