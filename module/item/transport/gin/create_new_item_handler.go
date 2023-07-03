@@ -19,8 +19,8 @@ func CreateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 			return
 		}
 
-		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
-		itemData.UserId = requester.GetUserId()
+		requester := core.GetRequester(ctx)
+		itemData.UserID = common.GetRequesterID(requester)
 
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 		store := storage.NewSQLStore(db)
@@ -31,6 +31,6 @@ func CreateItem(ac appctx.AppContext) func(ctx *gin.Context) {
 			return
 		}
 
-		core.SuccessResponse(ctx, core.NewDataResponse(itemData.Id))
+		core.SuccessResponse(ctx, core.NewDataResponse(itemData.ID))
 	}
 }

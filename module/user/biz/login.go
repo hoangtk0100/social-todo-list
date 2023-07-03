@@ -2,7 +2,6 @@ package biz
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hoangtk0100/app-context/component/token"
 	"github.com/hoangtk0100/app-context/core"
@@ -42,7 +41,8 @@ func (biz *loginBiz) Login(ctx context.Context, data *model.UserLogin) (*common.
 			WithDebug(err.Error())
 	}
 
-	accessToken, payload, err := biz.tokenMaker.CreateToken(token.AccessToken, strconv.Itoa(user.Id))
+	user.Mask()
+	accessToken, payload, err := biz.tokenMaker.CreateToken(token.AccessToken, user.FakeID.String())
 	if err != nil {
 		return nil, core.ErrInternalServerError.
 			WithError(model.ErrEmailOrPasswordInvalid.Error()).

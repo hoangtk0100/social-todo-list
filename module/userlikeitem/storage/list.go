@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/btcsuite/btcutil/base58"
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -17,12 +17,12 @@ const (
 	timeDBLayout = "2006-01-02 15:04:05.999999"
 )
 
-func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common.Paging) ([]common.SimpleUser, error) {
+func (store *sqlStore) ListUsers(ctx context.Context, itemID int, paging *core.Paging) ([]core.SimpleUser, error) {
 	_, span := trace.StartSpan(ctx, "userlikeitem.storage.list_users")
 	defer span.End()
 
 	var result []model.Like
-	db := store.db.Table(model.Like{}.TableName()).Where("item_id = ?", itemId)
+	db := store.db.Table(model.Like{}.TableName()).Where("item_id = ?", itemID)
 
 	if err := db.Select("user_id").Count(&paging.Total).Error; err != nil {
 		return nil, errors.WithStack(err)
@@ -48,7 +48,7 @@ func (store *sqlStore) ListUsers(ctx context.Context, itemId int, paging *common
 	}
 
 	size := len(result)
-	users := make([]common.SimpleUser, size)
+	users := make([]core.SimpleUser, size)
 	for index := range users {
 		users[index] = *result[index].User
 		users[index].UpdatedAt = nil
@@ -69,7 +69,7 @@ func (store *sqlStore) GetItemLikes(ctx context.Context, ids []int) (map[int]int
 	result := make(map[int]int)
 
 	type sqlData struct {
-		ItemId int `gorm:"column:item_id"`
+		ItemID int `gorm:"column:item_id"`
 		Count  int `gorm:"column:count"`
 	}
 
@@ -83,7 +83,7 @@ func (store *sqlStore) GetItemLikes(ctx context.Context, ids []int) (map[int]int
 	}
 
 	for _, item := range likes {
-		result[item.ItemId] = item.Count
+		result[item.ItemID] = item.Count
 	}
 
 	return result, nil

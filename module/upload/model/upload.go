@@ -1,12 +1,12 @@
 package model
 
 import (
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 )
 
 type Upload struct {
-	common.SQLModel `json:",inline"`
-	common.Image    `json:",inline"`
+	core.SQLModel `json:",inline"`
+	core.Image    `json:",inline"`
 }
 
 func (Upload) TableName() string { return "uploads" }

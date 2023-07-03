@@ -1,6 +1,8 @@
 package common
 
-import "time"
+import (
+	"time"
+)
 
 const (
 	CurrentUser        = "current_user"
@@ -13,34 +15,18 @@ const (
 	PluginRedis        = "redis"
 	PluginGin          = "gin"
 
+	PubSubEngineName = "pb-engine"
+
 	TopicUserLikedItem   = "TopicUserLikedItem"
 	TopicUserUnlikedItem = "TopicUserUnlikedItem"
 
 	HashPasswordFormat = "%s.%s"
-)
 
-type DBType int
-
-const (
-	DBTypeUser DBType = 1
-	DBTypeItem DBType = 2
+	MaskTypeUser = 1
+	MaskTypeItem = 2
 )
 
 type Token struct {
 	AccessToken string    `json:"access_token"`
 	ExpiredAt   time.Time `json:"expired_at"`
-}
-
-type Requester interface {
-	GetUserId() int
-	GetEmail() string
-	GetRole() string
-}
-
-func IsAdmin(requester Requester) bool {
-	return requester.GetRole() == "admin" || requester.GetRole() == "mod"
-}
-
-func IsOwner(requester Requester, ownerId int) bool {
-	return requester.GetUserId() == ownerId
 }

@@ -32,7 +32,13 @@ func (biz *registerBiz) Register(ctx context.Context, data *model.UserCreate) er
 	}
 
 	var err error
-	salt := common.GenSalt(50)
+	salt, err := util.RandomString(50)
+	if err != nil {
+		return core.ErrInternalServerError.
+			WithError(model.ErrCannotCreateUser.Error()).
+			WithDebug(err.Error())
+	}
+
 	data.Password, err = util.HashPassword(common.HashPasswordFormat, salt, data.Password)
 	if err != nil {
 		return core.ErrInternalServerError.

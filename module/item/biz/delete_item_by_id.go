@@ -20,7 +20,7 @@ func NewDeleteItemBiz(store DeleteItemStorage) *deleteItemBiz {
 	return &deleteItemBiz{store: store}
 }
 
-func (biz *deleteItemBiz) DeleteItemById(ctx context.Context, id int) error {
+func (biz *deleteItemBiz) DeleteItemByID(ctx context.Context, id int) error {
 	data, err := biz.store.GetItem(ctx, map[string]interface{}{"id": id})
 	if err != nil {
 		if core.ErrNotFound.Is(err) {

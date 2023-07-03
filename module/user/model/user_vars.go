@@ -1,15 +1,17 @@
 package model
 
-import "github.com/hoangtk0100/social-todo-list/common"
+import (
+	"github.com/hoangtk0100/app-context/core"
+)
 
 type UserCreate struct {
-	common.SQLModel `json:",inline"`
-	FirstName       string `json:"first_name" gorm:"column:first_name;"`
-	LastName        string `json:"last_name" gorm:"column:last_name;"`
-	Email           string `json:"email" gorm:"column:email;"`
-	Password        string `json:"password" gorm:"column:password;"`
-	Role            string `json:"-" gorm:"column:role;"`
-	Salt            string `json:"-" gorm:"column:salt;"`
+	core.SQLModel `json:",inline"`
+	FirstName     string `json:"first_name" gorm:"column:first_name;"`
+	LastName      string `json:"last_name" gorm:"column:last_name;"`
+	Email         string `json:"email" gorm:"column:email;"`
+	Password      string `json:"password" gorm:"column:password;"`
+	Role          string `json:"-" gorm:"column:role;"`
+	Salt          string `json:"-" gorm:"column:salt;"`
 }
 
 func (UserCreate) TableName() string {

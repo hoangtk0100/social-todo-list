@@ -29,6 +29,6 @@ func Register(ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		core.SuccessResponse(ctx, core.NewDataResponse(data.Id))
+		core.SuccessResponse(ctx, core.NewDataResponse(data.ID))
 	}
 }

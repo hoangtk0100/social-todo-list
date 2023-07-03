@@ -14,7 +14,7 @@ var cronUpdateItemLikedCountCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		service := appctx.NewAppContext(
 			appctx.WithName("social-todo-list"),
-			appctx.WithComponent(gormdb.NewGormDB("main.mysql", common.PluginDBMain)),
+			appctx.WithComponent(gormdb.NewGormDB(common.PluginDBMain, common.PluginDBMain)),
 		)
 
 		log := service.Logger("update-count-service")

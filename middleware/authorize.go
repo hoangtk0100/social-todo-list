@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	"errors"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/user/model"
 )
@@ -26,7 +26,7 @@ var (
 )
 
 type AuthenStore interface {
-	FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*model.User, error)
+	GetUserByID(ctx context.Context, id int) (*model.User, error)
 }
 
 func extractTokenFromHeader(input string) (string, error) {
@@ -64,8 +64,15 @@ func RequireAuth(store AuthenStore, ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		userId, _ := strconv.Atoi(payload.UID)
-		user, err := store.FindUser(ctx.Request.Context(), map[string]interface{}{"id": userId})
+		uid, err := util.UIDFromString(payload.UID)
+		if err != nil {
+			core.ErrorResponse(ctx, core.ErrUnauthorized.WithError(err.Error()).WithDebug(err.Error()))
+			ctx.Abort()
+			return
+		}
+
+		userID := int(uid.GetLocalID())
+		user, err := store.GetUserByID(ctx.Request.Context(), userID)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			ctx.Abort()
@@ -78,7 +85,7 @@ func RequireAuth(store AuthenStore, ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		ctx.Set(common.CurrentUser, user)
+		ctx.Set(core.KeyRequester, core.NewRequester(payload.ID.String(), payload.UID))
 		ctx.Next()
 	}
 }

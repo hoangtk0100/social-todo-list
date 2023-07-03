@@ -12,7 +12,7 @@ type ListItemStorage interface {
 	ListItem(
 		ctx context.Context,
 		filter *model.Filter,
-		paging *common.Paging,
+		paging *core.Paging,
 		moreKeys ...string,
 	) ([]model.TodoItem, error)
 }
@@ -24,17 +24,17 @@ type ItemLikeStorage interface {
 type listItemRepo struct {
 	store     ListItemStorage
 	likeStore ItemLikeStorage
-	requester common.Requester
+	requester core.Requester
 }
 
-func NewListItemRepo(store ListItemStorage, likeStore ItemLikeStorage, requester common.Requester) *listItemRepo {
+func NewListItemRepo(store ListItemStorage, likeStore ItemLikeStorage, requester core.Requester) *listItemRepo {
 	return &listItemRepo{store: store, likeStore: likeStore, requester: requester}
 }
 
 func (repo *listItemRepo) ListItem(
 	ctx context.Context,
 	filter *model.Filter,
-	paging *common.Paging,
+	paging *core.Paging,
 	moreKeys ...string,
 ) ([]model.TodoItem, error) {
 	newCtx := context.WithValue(ctx, common.CurrentUser, repo.requester)
@@ -52,7 +52,7 @@ func (repo *listItemRepo) ListItem(
 
 	ids := make([]int, len(data))
 	for index := range ids {
-		ids[index] = data[index].Id
+		ids[index] = data[index].ID
 	}
 
 	itemLikesMap, err := repo.likeStore.GetItemLikes(newCtx, ids)
@@ -61,7 +61,7 @@ func (repo *listItemRepo) ListItem(
 	}
 
 	for index := range data {
-		data[index].LikedCount = itemLikesMap[data[index].Id]
+		data[index].LikedCount = itemLikesMap[data[index].ID]
 	}
 
 	return data, nil

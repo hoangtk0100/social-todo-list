@@ -12,23 +12,23 @@ type ListItemRepo interface {
 	ListItem(
 		ctx context.Context,
 		filter *model.Filter,
-		paging *common.Paging,
+		paging *core.Paging,
 		moreKeys ...string,
 	) ([]model.TodoItem, error)
 }
 
 type listItemBiz struct {
 	repo      ListItemRepo
-	requester common.Requester
+	requester core.Requester
 }
 
-func NewListItemBiz(repo ListItemRepo, requester common.Requester) *listItemBiz {
+func NewListItemBiz(repo ListItemRepo, requester core.Requester) *listItemBiz {
 	return &listItemBiz{repo: repo, requester: requester}
 }
 
 func (biz *listItemBiz) ListItem(ctx context.Context,
 	filter *model.Filter,
-	paging *common.Paging,
+	paging *core.Paging,
 ) ([]model.TodoItem, error) {
 	newCtx := context.WithValue(ctx, common.CurrentUser, biz.requester)
 

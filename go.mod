@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-resty/resty/v2 v2.7.0
-	github.com/hoangtk0100/app-context v0.0.0-20230626085519-ea26d1349e0a
+	github.com/hoangtk0100/app-context v0.0.0-20230702060458-a84030a59630
 	github.com/pkg/errors v0.9.1
 	github.com/rs/zerolog v1.29.1
 	golang.org/x/net v0.10.0

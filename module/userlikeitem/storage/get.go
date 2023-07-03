@@ -10,14 +10,14 @@ import (
 	"gorm.io/gorm"
 )
 
-func (store *sqlStore) Find(ctx context.Context, userId, itemId int) (*model.Like, error) {
+func (store *sqlStore) Find(ctx context.Context, userID, itemID int) (*model.Like, error) {
 	_, span := trace.StartSpan(ctx, "userlikeitem.storage.get")
 	defer span.End()
 
 	var data model.Like
 
 	if err := store.db.
-		Where("item_id = ? and user_id = ?", itemId, userId).
+		Where("item_id = ? and user_id = ?", itemID, userID).
 		First(&data).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, core.ErrNotFound

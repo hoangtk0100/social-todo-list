@@ -19,7 +19,7 @@ func NewGetItemBiz(store GetItemStorage) *getItemBiz {
 	return &getItemBiz{store: store}
 }
 
-func (biz *getItemBiz) GetItemById(ctx context.Context, id int) (*model.TodoItem, error) {
+func (biz *getItemBiz) GetItemByID(ctx context.Context, id int) (*model.TodoItem, error) {
 	data, err := biz.store.GetItem(ctx, map[string]interface{}{"id": id})
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
