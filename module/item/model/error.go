@@ -12,5 +12,5 @@ var (
 	ErrCannotUpdateItem    = errors.New("cannot update TODO item")
 	ErrCannotDeleteItem    = errors.New("cannot delete TODO item")
 	ErrRequesterIsNotOwner = errors.New("no permission, only TODO owner can do this")
-	ErrItemIdInvalid       = errors.New("invalid TODO id")
+	ErrItemIDInvalid       = errors.New("invalid TODO id")
 )

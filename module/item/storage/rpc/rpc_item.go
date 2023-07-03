@@ -26,7 +26,7 @@ func NewItemService(serviceURL string, logger appctx.Logger) *itemService {
 
 func (s *itemService) GetItemLikes(ctx context.Context, ids []int) (map[int]int, error) {
 	type requestBody struct {
-		Ids []int `json:"ids"`
+		IDs []int `json:"ids"`
 	}
 
 	var response struct {
@@ -35,7 +35,7 @@ func (s *itemService) GetItemLikes(ctx context.Context, ids []int) (map[int]int,
 
 	resp, err := s.client.R().
 		SetHeader("Content-Type", "application/json").
-		SetBody(requestBody{Ids: ids}).
+		SetBody(requestBody{IDs: ids}).
 		SetResult(&response).
 		Post(fmt.Sprintf("%s/%s", s.serviceURL, "v1/rpc/get_item_likes"))
 

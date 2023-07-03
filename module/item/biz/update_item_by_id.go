@@ -15,17 +15,17 @@ type UpdateItemStorage interface {
 
 type updateItemBiz struct {
 	store     UpdateItemStorage
-	requester common.Requester
+	requester core.Requester
 }
 
-func NewUpdateItemBiz(store UpdateItemStorage, requester common.Requester) *updateItemBiz {
+func NewUpdateItemBiz(store UpdateItemStorage, requester core.Requester) *updateItemBiz {
 	return &updateItemBiz{
 		store:     store,
 		requester: requester,
 	}
 }
 
-func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate *model.TodoItemUpdate) error {
+func (biz *updateItemBiz) UpdateItemByID(ctx context.Context, id int, dataUpdate *model.TodoItemUpdate) error {
 	data, err := biz.store.GetItem(ctx, map[string]interface{}{"id": id})
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
@@ -43,7 +43,7 @@ func (biz *updateItemBiz) UpdateItemById(ctx context.Context, id int, dataUpdate
 			WithError(model.ErrItemDeleted.Error())
 	}
 
-	if !common.IsOwner(biz.requester, data.UserId) && !common.IsAdmin(biz.requester) {
+	if data.UserID != common.GetRequesterID(biz.requester) {
 		return core.ErrForbidden.
 			WithError(model.ErrRequesterIsNotOwner.Error()).
 			WithDebug(err.Error())

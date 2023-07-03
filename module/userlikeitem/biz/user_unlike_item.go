@@ -11,8 +11,8 @@ import (
 )
 
 type UserUnlikeItemStorage interface {
-	Find(ctx context.Context, userId, itemId int) (*model.Like, error)
-	Delete(ctx context.Context, userId, itemId int) error
+	Find(ctx context.Context, userID, itemID int) (*model.Like, error)
+	Delete(ctx context.Context, userID, itemID int) error
 }
 
 type userUnlikeItemBiz struct {
@@ -24,8 +24,8 @@ func NewUserUnlikeItemBiz(store UserUnlikeItemStorage, ps core.PubSubComponent) 
 	return &userUnlikeItemBiz{store: store, ps: ps}
 }
 
-func (biz *userUnlikeItemBiz) UnlikeItem(ctx context.Context, userId, itemId int) error {
-	_, err := biz.store.Find(ctx, userId, itemId)
+func (biz *userUnlikeItemBiz) UnlikeItem(ctx context.Context, userID, itemID int) error {
+	_, err := biz.store.Find(ctx, userID, itemID)
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
 			return core.ErrNotFound.
@@ -38,15 +38,15 @@ func (biz *userUnlikeItemBiz) UnlikeItem(ctx context.Context, userId, itemId int
 			WithDebug(err.Error())
 	}
 
-	if err := biz.store.Delete(ctx, userId, itemId); err != nil {
+	if err := biz.store.Delete(ctx, userID, itemID); err != nil {
 		return core.ErrInternalServerError.
 			WithError(model.ErrCannotUnlikeItem.Error()).
 			WithDebug(err.Error())
 	}
 
 	msg := pubsub.NewMessage(&model.Like{
-		UserId: userId,
-		ItemId: itemId,
+		UserID: userID,
+		ItemID: itemID,
 	})
 
 	if err := biz.ps.Publish(ctx, common.TopicUserUnlikedItem, msg); err != nil {

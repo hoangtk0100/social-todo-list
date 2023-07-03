@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/biz"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
@@ -14,17 +15,17 @@ import (
 
 func LikeItem(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := common.UIDFromBase58(ctx.Param("id"))
+		id, err := util.UIDFromString(ctx.Param("id"))
 		if err != nil {
 			core.ErrorResponse(ctx, core.ErrBadRequest.
-				WithError(model.ErrItemIdInvalid.Error()).
+				WithError(model.ErrItemIDInvalid.Error()).
 				WithDebug(err.Error()),
 			)
 
 			return
 		}
 
-		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
+		requester := core.GetRequester(ctx)
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 		ps := ac.MustGet(common.PluginPubSub).(core.PubSubComponent)
 
@@ -33,8 +34,8 @@ func LikeItem(ac appctx.AppContext) gin.HandlerFunc {
 		now := time.Now().UTC()
 
 		if err := business.LikeItem(ctx.Request.Context(), &model.Like{
-			UserId:    requester.GetUserId(),
-			ItemId:    int(id.GetLocalID()),
+			UserID:    common.GetRequesterID(requester),
+			ItemID:    int(id.GetLocalID()),
 			CreatedAt: &now,
 		}); err != nil {
 			core.ErrorResponse(ctx, err)

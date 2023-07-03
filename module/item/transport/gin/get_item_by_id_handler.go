@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/item/biz"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
@@ -12,10 +13,10 @@ import (
 
 func GetItem(ac appctx.AppContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
-		id, err := common.UIDFromBase58(ctx.Param("id"))
+		id, err := util.UIDFromString(ctx.Param("id"))
 		if err != nil {
 			core.ErrorResponse(ctx, core.ErrBadRequest.
-				WithError(model.ErrItemIdInvalid.Error()).
+				WithError(model.ErrItemIDInvalid.Error()).
 				WithDebug(err.Error()),
 			)
 
@@ -26,7 +27,7 @@ func GetItem(ac appctx.AppContext) func(ctx *gin.Context) {
 		store := storage.NewSQLStore(db)
 		business := biz.NewGetItemBiz(store)
 
-		data, err := business.GetItemById(ctx.Request.Context(), int(id.GetLocalID()))
+		data, err := business.GetItemByID(ctx.Request.Context(), int(id.GetLocalID()))
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return

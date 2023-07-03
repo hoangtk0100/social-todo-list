@@ -2,17 +2,28 @@ package ginuser
 
 import (
 	"github.com/gin-gonic/gin"
+	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/module/user/model"
+	"github.com/hoangtk0100/social-todo-list/module/user/biz"
+	"github.com/hoangtk0100/social-todo-list/module/user/storage"
 )
 
-func Profile() gin.HandlerFunc {
+func Profile(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		user := ctx.MustGet(common.CurrentUser)
+		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 
-		user.(*model.User).SQLModel.Mask(common.DBTypeUser)
+		store := storage.NewSQLStore(db)
+		business := biz.NewGetProfileBiz(store)
 
-		core.SuccessResponse(ctx, core.NewDataResponse(user))
+		user, err := business.GetProfile(ctx)
+		if err != nil {
+			core.ErrorResponse(ctx, err)
+			return
+		}
+
+		data := core.NewSimpleUser(user.ID, user.FirstName, user.LastName, user.Avatar)
+		data.Mask(common.MaskTypeUser)
+		core.SuccessResponse(ctx, core.NewDataResponse(data))
 	}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 type RealUserStore interface {
-	FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*model.User, error)
+	GetUserByID(ctx context.Context, id int) (*model.User, error)
 }
 
 type userCache struct {
@@ -29,19 +29,18 @@ func NewUserCache(store cache.Cache, realStore RealUserStore) *userCache {
 	}
 }
 
-func (c *userCache) FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*model.User, error) {
-	userId := conds["id"].(int)
-	key := fmt.Sprintf("user-%d", userId)
+func (c *userCache) GetUserByID(ctx context.Context, id int) (*model.User, error) {
+	key := fmt.Sprintf("user-%d", id)
 
 	var user model.User
 	err := c.store.Get(ctx, key, &user)
-	if err == nil && user.Id > 0 {
+	if err == nil && user.ID > 0 {
 		return &user, nil
 	}
 
 	var userErr error
 	c.once.Do(func() {
-		realUser, err := c.realStore.FindUser(ctx, conds, moreInfo...)
+		realUser, err := c.realStore.GetUserByID(ctx, id)
 		if err != nil {
 			log.Println(userErr)
 			userErr = err
@@ -57,7 +56,7 @@ func (c *userCache) FindUser(ctx context.Context, conds map[string]interface{}, 
 	}
 
 	err = c.store.Get(ctx, key, &user)
-	if err == nil && user.Id > 0 {
+	if err == nil && user.ID > 0 {
 		return &user, nil
 	}
 

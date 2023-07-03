@@ -3,17 +3,17 @@ package model
 import (
 	"time"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
 )
 
 type Like struct {
-	UserId    int                `json:"user_id" gorm:"column:user_id;"`
-	ItemId    int                `json:"item_id" gorm:"column:item_id;"`
-	CreatedAt *time.Time         `json:"created_at" gorm:"column:created_at;"`
-	User      *common.SimpleUser `json:"-" gorm:"foreignKey:UserId;"`
+	UserID    int              `json:"user_id" gorm:"column:user_id;"`
+	ItemID    int              `json:"item_id" gorm:"column:item_id;"`
+	CreatedAt *time.Time       `json:"created_at" gorm:"column:created_at;"`
+	User      *core.SimpleUser `json:"-" gorm:"foreignKey:UserID;"`
 }
 
 func (Like) TableName() string { return "user_like_items" }
 
-func (l *Like) GetItemId() int { return l.ItemId }
-func (l *Like) GetUserId() int { return l.UserId }
+func (l *Like) GetItemID() int { return l.ItemID }
+func (l *Like) GetUserID() int { return l.UserID }

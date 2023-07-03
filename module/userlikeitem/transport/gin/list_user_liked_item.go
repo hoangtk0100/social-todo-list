@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/biz"
 	"github.com/hoangtk0100/social-todo-list/module/userlikeitem/model"
@@ -12,17 +13,17 @@ import (
 
 func ListLikedUsers(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		id, err := common.UIDFromBase58(ctx.Param("id"))
+		id, err := util.UIDFromString(ctx.Param("id"))
 		if err != nil {
 			core.ErrorResponse(ctx, core.ErrBadRequest.
-				WithError(model.ErrItemIdInvalid.Error()).
+				WithError(model.ErrItemIDInvalid.Error()).
 				WithDebug(err.Error()),
 			)
 
 			return
 		}
 
-		var paging common.Paging
+		var paging core.Paging
 		if err := ctx.ShouldBind(&paging); err != nil {
 			core.ErrorResponse(ctx, core.ErrBadRequest.WithError(err.Error()))
 			return
@@ -42,7 +43,7 @@ func ListLikedUsers(ac appctx.AppContext) gin.HandlerFunc {
 		}
 
 		for index := range result {
-			result[index].Mask()
+			result[index].Mask(common.MaskTypeUser)
 		}
 
 		core.SuccessResponse(ctx, core.NewResponse(result, paging, nil))

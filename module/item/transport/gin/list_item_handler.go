@@ -15,7 +15,7 @@ import (
 func ListItem(ac appctx.AppContext) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var queryString struct {
-			common.Paging
+			core.Paging
 			model.Filter
 		}
 
@@ -26,7 +26,7 @@ func ListItem(ac appctx.AppContext) func(ctx *gin.Context) {
 
 		queryString.Paging.Process()
 
-		requester := ctx.MustGet(common.CurrentUser).(common.Requester)
+		requester := core.GetRequester(ctx)
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 		apiItemCaller := ac.MustGet(common.PluginItemAPI).(interface {
 			GetServiceURL() string

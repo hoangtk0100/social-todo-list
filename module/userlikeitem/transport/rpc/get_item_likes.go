@@ -11,7 +11,7 @@ import (
 func GetItemLikes(ac appctx.AppContext) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		type requestData struct {
-			Ids []int `json:"ids"`
+			IDs []int `json:"ids"`
 		}
 
 		var data requestData
@@ -23,7 +23,7 @@ func GetItemLikes(ac appctx.AppContext) gin.HandlerFunc {
 		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 		store := storage.NewSQLStore(db)
 
-		mapResult, err := store.GetItemLikes(ctx.Request.Context(), data.Ids)
+		mapResult, err := store.GetItemLikes(ctx.Request.Context(), data.IDs)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return

@@ -3,7 +3,8 @@ package storage
 import (
 	"strings"
 
-	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/module/item/model"
 	"github.com/pkg/errors"
 	"go.opencensus.io/trace"
@@ -13,7 +14,7 @@ import (
 func (store *sqlStore) ListItem(
 	ctx context.Context,
 	filter *model.Filter,
-	paging *common.Paging,
+	paging *core.Paging,
 	moreKeys ...string,
 ) ([]model.TodoItem, error) {
 	_, span := trace.StartSpan(ctx, "item.storage.list")
@@ -26,8 +27,8 @@ func (store *sqlStore) ListItem(
 		Where("status <> ?", "Deleted")
 
 	// Get items of requester only
-	// requester := ctx.Value(common.CurrentUser).(common.Requester)
-	// db = db.Where("user_id = ?", requester.GetUserId())
+	// requester := ctx.Value(common.CurrentUser).(core.Requester)
+	// db = db.Where("user_id = ?", requester.GetUID())
 
 	if f := filter; f != nil {
 		if v := f.Status; v != "" {
@@ -44,7 +45,7 @@ func (store *sqlStore) ListItem(
 	}
 
 	if cursor := strings.TrimSpace(paging.FakeCursor); cursor != "" {
-		id, err := common.UIDFromBase58(cursor)
+		id, err := util.UIDFromString(cursor)
 		if err != nil {
 			return nil, errors.WithStack(err)
 		}
@@ -65,7 +66,7 @@ func (store *sqlStore) ListItem(
 	size := len(result)
 	if size > 0 {
 		result[size-1].Mask()
-		paging.NextCursor = result[size-1].FakeId.String()
+		paging.NextCursor = result[size-1].FakeID.String()
 	}
 
 	return result, nil

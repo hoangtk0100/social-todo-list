@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
 )
 
@@ -63,23 +64,37 @@ func (role *UserRole) MarshalJSON() ([]byte, error) {
 }
 
 type User struct {
-	common.SQLModel
-	Email     string   `json:"email" gorm:"column:email;"`
-	Password  string   `json:"-" gorm:"column:password;"`
-	Salt      string   `json:"-" gorm:"column:salt;"`
-	LastName  string   `json:"last_name" gorm:"column:last_name;"`
-	FirstName string   `json:"first_name" gorm:"column:first_name;"`
-	Phone     string   `json:"phone" gorm:"column:phone;"`
-	Role      UserRole `json:"role" gorm:"column:role;"`
-	Status    int      `json:"status" gorm:"column:status;"`
+	core.SQLModel
+	Email     string      `json:"email" gorm:"column:email;"`
+	Password  string      `json:"-" gorm:"column:password;"`
+	Salt      string      `json:"-" gorm:"column:salt;"`
+	LastName  string      `json:"last_name" gorm:"column:last_name;"`
+	FirstName string      `json:"first_name" gorm:"column:first_name;"`
+	Phone     string      `json:"phone" gorm:"column:phone;"`
+	Avatar    *core.Image `json:"avatar" gorm:"column:avatar;"`
+	Role      UserRole    `json:"role" gorm:"column:role;"`
+	Status    int         `json:"status" gorm:"column:status;"`
+}
+
+func NewUser(firstName, lastName, email string) User {
+	return User{
+		SQLModel:  core.NewSQLModel(),
+		FirstName: firstName,
+		LastName:  lastName,
+		Email:     email,
+		Phone:     "",
+		Avatar:    nil,
+		Role:      RoleUser,
+		Status:    0,
+	}
 }
 
 func (User) TableName() string {
 	return "users"
 }
 
-func (u *User) GetUserId() int {
-	return u.Id
+func (u *User) GetUserID() int {
+	return u.ID
 }
 
 func (u *User) GetEmail() string {
@@ -88,4 +103,8 @@ func (u *User) GetEmail() string {
 
 func (u *User) GetRole() string {
 	return u.Role.String()
+}
+
+func (u *User) Mask() {
+	u.SQLModel.Mask(common.MaskTypeUser)
 }

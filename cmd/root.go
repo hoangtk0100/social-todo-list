@@ -23,10 +23,10 @@ import (
 	"github.com/hoangtk0100/social-todo-list/subscriber"
 
 	acmiddleware "github.com/hoangtk0100/app-context/component/server/gin/middleware"
+	"github.com/hoangtk0100/social-todo-list/component/rpccaller"
 	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
 	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
 	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
-	"github.com/hoangtk0100/social-todo-list/plugin/rpccaller"
 
 	"github.com/spf13/cobra"
 )
@@ -71,7 +71,7 @@ var rootCmd = &cobra.Command{
 		{
 			v1.POST("/register", ginuser.Register(service))
 			v1.POST("/login", ginuser.Login(service))
-			v1.GET("/profile", authMiddleware, ginuser.Profile())
+			v1.GET("/profile", authMiddleware, ginuser.Profile(service))
 
 			uploads := v1.Group("/upload", authMiddleware)
 			{
@@ -98,10 +98,27 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		_ = subscriber.NewPBEngine(service).Start()
-
+		startPbEngine(service)
 		server.Start()
 	},
+}
+
+func startPbEngine(ac appctx.AppContext) {
+	ps := ac.MustGet(common.PluginPubSub).(core.PubSubComponent)
+	pbEngine := core.NewSubscribeEngine(common.PubSubEngineName, ps, ac)
+	pbEngine.AddTopicJobs(
+		common.TopicUserLikedItem,
+		true,
+		subscriber.IncreaseLikedCountAfterUserLikeItem(ac),
+	)
+
+	pbEngine.AddTopicJobs(
+		common.TopicUserUnlikedItem,
+		true,
+		subscriber.DecreaseLikedCountAfterUserUnlikeItem(ac),
+	)
+
+	pbEngine.Start()
 }
 
 func Execute() {

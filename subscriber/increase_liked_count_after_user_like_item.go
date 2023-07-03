@@ -10,19 +10,19 @@ import (
 	"github.com/hoangtk0100/social-todo-list/module/item/storage"
 )
 
-type HasItemId interface {
-	GetItemId() int
+type HasItemID interface {
+	GetItemID() int
 }
 
-func IncreaseLikedCountAfterUserLikeItem(ac appctx.AppContext) subJob {
-	return subJob{
+func IncreaseLikedCountAfterUserLikeItem(ac appctx.AppContext) core.SubJob {
+	return core.SubJob{
 		Name: "Increase liked count after user likes item",
 		Hdl: func(ctx context.Context, msg *pubsub.Message) error {
 			db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
 			data := msg.Data().(map[string]interface{})
-			itemId := data["item_id"].(float64)
+			itemID := data["item_id"].(float64)
 
-			if err := storage.NewSQLStore(db).IncreaseLikedCount(ctx, int(itemId)); err != nil {
+			if err := storage.NewSQLStore(db).IncreaseLikedCount(ctx, int(itemID)); err != nil {
 				return err
 			}
 
