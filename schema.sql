@@ -32,9 +32,8 @@ CREATE TABLE `todo_items` (
 CREATE TABLE `images` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
-  `url` text NOT NULL,
-  `cloud_name` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'local',
-  `extension` varchar(120) DEFAULT NULL,
+  `path` text NOT NULL,
+  `provider` varchar(120) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT 'local',
   `width` int DEFAULT NULL,
   `height` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,

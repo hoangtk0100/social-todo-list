@@ -16,7 +16,7 @@ func (service *service) Upload() gin.HandlerFunc {
 			return
 		}
 
-		img, err := service.business.Upload(ctx.Request.Context(), dataBytes, folder, fileName, contentType)
+		img, err := service.business.Upload(ctx, dataBytes, folder, fileName, contentType)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return
