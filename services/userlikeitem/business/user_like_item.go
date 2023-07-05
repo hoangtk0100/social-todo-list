@@ -10,23 +10,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type UserLikeItemRepository interface {
-	Create(ctx context.Context, data *entity.Like) error
-}
-
-type userLikeItemBusiness struct {
-	repo UserLikeItemRepository
-	ps   core.PubSubComponent
-}
-
-func NewUserLikeItemBusiness(repo UserLikeItemRepository, ps core.PubSubComponent) *userLikeItemBusiness {
-	return &userLikeItemBusiness{repo: repo, ps: ps}
-}
-
-func (biz *userLikeItemBusiness) LikeItem(ctx context.Context, data *entity.Like) error {
+func (biz *business) LikeItem(ctx context.Context, data *entity.Like) error {
 	if err := biz.repo.Create(ctx, data); err != nil {
-		return core.ErrInternalServerError.
-			WithError(entity.ErrCannotLikeItem.Error()).
+		return core.ErrConflict.
+			WithError(entity.ErrLikedItem.Error()).
 			WithDebug(err.Error())
 	}
 

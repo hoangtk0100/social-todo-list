@@ -10,23 +10,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
 )
 
-type LoginRepository interface {
-	FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*entity.User, error)
-}
-
-type loginBusiness struct {
-	repo       LoginRepository
-	tokenMaker core.TokenMakerComponent
-}
-
-func NewLoginBusiness(repo LoginRepository, tokenMaker core.TokenMakerComponent) *loginBusiness {
-	return &loginBusiness{
-		repo:       repo,
-		tokenMaker: tokenMaker,
-	}
-}
-
-func (biz *loginBusiness) Login(ctx context.Context, data *entity.UserLogin) (*common.Token, error) {
+func (biz *business) Login(ctx context.Context, data *entity.UserLogin) (*common.Token, error) {
 	user, err := biz.repo.FindUser(ctx, map[string]interface{}{"email": data.Email})
 	if err != nil {
 		return nil, core.ErrBadRequest.

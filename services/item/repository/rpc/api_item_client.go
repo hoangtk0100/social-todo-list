@@ -2,7 +2,6 @@ package rpc
 
 import (
 	"context"
-
 	"fmt"
 
 	appctx "github.com/hoangtk0100/app-context"

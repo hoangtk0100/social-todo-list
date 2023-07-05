@@ -2,16 +2,13 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/app-context/util"
 	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/services/item/entity"
-	"github.com/hoangtk0100/social-todo-list/services/userlikeitem/business"
-	"github.com/hoangtk0100/social-todo-list/services/userlikeitem/repository/mysql"
 )
 
-func ListLikedUsers(ac appctx.AppContext) gin.HandlerFunc {
+func (service *service) ListLikedUsers() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		id, err := util.UIDFromString(ctx.Param("id"))
 		if err != nil {
@@ -31,12 +28,7 @@ func ListLikedUsers(ac appctx.AppContext) gin.HandlerFunc {
 
 		paging.Process()
 
-		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
-
-		repo := mysql.NewMySQLRepository(db)
-		business := business.NewListUsersLikedItemBusiness(repo)
-
-		result, err := business.ListUsersLikedItem(ctx.Request.Context(), int(id.GetLocalID()), &paging)
+		result, err := service.business.ListUsersLikedItem(ctx, int(id.GetLocalID()), &paging)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return

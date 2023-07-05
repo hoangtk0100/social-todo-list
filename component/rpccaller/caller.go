@@ -11,7 +11,7 @@ type itemAPICaller struct {
 	logger     appctx.Logger
 }
 
-func NewitemAPICaller(id string) *itemAPICaller {
+func NewItemAPICaller(id string) *itemAPICaller {
 	return &itemAPICaller{id: id}
 }
 

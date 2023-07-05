@@ -7,40 +7,11 @@ import (
 	"github.com/hoangtk0100/social-todo-list/services/item/entity"
 )
 
-type ListItemRepository interface {
-	ListItem(
-		ctx context.Context,
-		filter *entity.Filter,
-		paging *core.Paging,
-		moreKeys ...string,
-	) ([]entity.TodoItem, error)
-}
-
-type ItemLikeRepository interface {
-	GetItemLikes(ctx context.Context, ids []int) (map[int]int, error)
-}
-
-type listItemBusiness struct {
-	repo      ListItemRepository
-	likeRepo  ItemLikeRepository
-	requester core.Requester
-}
-
-func NewListItemBusiness(repo ListItemRepository, likeRepo ItemLikeRepository, requester core.Requester) *listItemBusiness {
-	return &listItemBusiness{
-		repo:      repo,
-		likeRepo:  likeRepo,
-		requester: requester,
-	}
-}
-
-func (biz *listItemBusiness) ListItem(ctx context.Context,
+func (biz *business) ListItem(ctx context.Context,
 	filter *entity.Filter,
 	paging *core.Paging,
 ) ([]entity.TodoItem, error) {
-	newCtx := core.ContextWithRequester(ctx, biz.requester)
-
-	data, err := biz.repo.ListItem(newCtx, filter, paging, "Owner")
+	data, err := biz.repo.ListItem(ctx, filter, paging, "Owner")
 	if err != nil {
 		return nil, core.ErrInternalServerError.
 			WithError(entity.ErrCannotGetItems.Error()).
@@ -56,7 +27,7 @@ func (biz *listItemBusiness) ListItem(ctx context.Context,
 		ids[index] = data[index].ID
 	}
 
-	itemLikesMap, err := biz.likeRepo.GetItemLikes(newCtx, ids)
+	itemLikesMap, err := biz.likeRepo.GetItemLikes(ctx, ids)
 	if err != nil {
 		return data, nil
 	}

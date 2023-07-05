@@ -4,15 +4,11 @@ import (
 	"mime/multipart"
 
 	"github.com/gin-gonic/gin"
-	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
-	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/services/upload/business"
 	"github.com/hoangtk0100/social-todo-list/services/upload/entity"
-	"github.com/hoangtk0100/social-todo-list/services/upload/repository/mysql"
 )
 
-func Upload(ac appctx.AppContext) gin.HandlerFunc {
+func (service *service) Upload() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		_, dataBytes, folder, fileName, contentType, err := validateFiles(ctx)
 		if err != nil {
@@ -20,12 +16,7 @@ func Upload(ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
-		provider := ac.MustGet(common.PluginR2).(core.StorageComponent)
-		repo := mysql.NewMySQLRepository(db)
-		business := business.NewUploadBusiness(repo, provider)
-
-		img, err := business.Upload(ctx.Request.Context(), dataBytes, folder, fileName, contentType)
+		img, err := service.business.Upload(ctx.Request.Context(), dataBytes, folder, fileName, contentType)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return
@@ -35,7 +26,7 @@ func Upload(ac appctx.AppContext) gin.HandlerFunc {
 	}
 }
 
-func UploadLocal() func(ctx *gin.Context) {
+func (service *service) UploadLocal() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		fileHeader, dataBytes, folder, fileName, _, err := validateFiles(ctx)
 		if err != nil {
@@ -43,8 +34,7 @@ func UploadLocal() func(ctx *gin.Context) {
 			return
 		}
 
-		business := business.NewUploadBusiness(nil, nil)
-		img, err := business.UploadLocal(ctx, fileHeader, dataBytes, folder, fileName)
+		img, err := service.business.UploadLocal(ctx, fileHeader, dataBytes, folder, fileName)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return

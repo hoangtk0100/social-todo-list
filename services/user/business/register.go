@@ -9,22 +9,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
 )
 
-type RegisterRepository interface {
-	FindUser(ctx context.Context, conds map[string]interface{}, moreInfo ...string) (*entity.User, error)
-	CreateUser(ctx context.Context, data *entity.UserCreate) error
-}
-
-type registerBusiness struct {
-	repo RegisterRepository
-}
-
-func NewRegisterBusiness(repo RegisterRepository) *registerBusiness {
-	return &registerBusiness{
-		repo: repo,
-	}
-}
-
-func (biz *registerBusiness) Register(ctx context.Context, data *entity.UserCreate) error {
+func (biz *business) Register(ctx context.Context, data *entity.UserCreate) error {
 	user, _ := biz.repo.FindUser(ctx, map[string]interface{}{"email": data.Email})
 	if user != nil {
 		return core.ErrBadRequest.

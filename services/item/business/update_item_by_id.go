@@ -8,28 +8,12 @@ import (
 	"github.com/hoangtk0100/social-todo-list/services/item/entity"
 )
 
-type UpdateItemRepository interface {
-	GetItem(ctx context.Context, cond map[string]interface{}) (*entity.TodoItem, error)
-	UpdateItem(ctx context.Context, cond map[string]interface{}, dataUpdate *entity.TodoItemUpdate) error
-}
-
-type updateItemBusiness struct {
-	repo      UpdateItemRepository
-	requester core.Requester
-}
-
-func NewUpdateItemBusiness(repo UpdateItemRepository, requester core.Requester) *updateItemBusiness {
-	return &updateItemBusiness{
-		repo:      repo,
-		requester: requester,
-	}
-}
-
-func (biz *updateItemBusiness) UpdateItemByID(ctx context.Context, id int, dataUpdate *entity.TodoItemUpdate) error {
+func (biz *business) UpdateItemByID(ctx context.Context, id int, dataUpdate *entity.TodoItemUpdate) error {
 	data, err := biz.repo.GetItem(ctx, map[string]interface{}{"id": id})
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
 			return core.ErrNotFound.
+				WithError(entity.ErrCannotGetItem.Error()).
 				WithDebug(err.Error())
 		}
 
@@ -43,10 +27,11 @@ func (biz *updateItemBusiness) UpdateItemByID(ctx context.Context, id int, dataU
 			WithError(entity.ErrItemDeleted.Error())
 	}
 
-	if data.UserID != common.GetRequesterID(biz.requester) {
+	requester := core.GetRequester(ctx)
+	requesterID := common.GetRequesterID(requester)
+	if data.UserID != requesterID {
 		return core.ErrForbidden.
-			WithError(entity.ErrRequesterIsNotOwner.Error()).
-			WithDebug(err.Error())
+			WithError(entity.ErrRequesterIsNotOwner.Error())
 	}
 
 	if err := biz.repo.UpdateItem(ctx, map[string]interface{}{"id": id}, dataUpdate); err != nil {

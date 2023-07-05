@@ -8,21 +8,7 @@ import (
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
 )
 
-type GetProfileRepository interface {
-	GetUserByID(ctx context.Context, id int) (*entity.User, error)
-}
-
-type getProfileBusiness struct {
-	repo GetProfileRepository
-}
-
-func NewGetProfileBusiness(repo GetProfileRepository) *getProfileBusiness {
-	return &getProfileBusiness{
-		repo: repo,
-	}
-}
-
-func (biz *getProfileBusiness) GetProfile(ctx context.Context) (*entity.User, error) {
+func (biz *business) GetProfile(ctx context.Context) (*entity.User, error) {
 	requester := core.GetRequester(ctx)
 	requesterID := common.GetRequesterID(requester)
 

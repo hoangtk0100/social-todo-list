@@ -2,15 +2,11 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
-	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/services/user/business"
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
-	"github.com/hoangtk0100/social-todo-list/services/user/repository/mysql"
 )
 
-func Register(ac appctx.AppContext) gin.HandlerFunc {
+func (service *service) Register() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var data entity.UserCreate
 
@@ -19,12 +15,7 @@ func Register(ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
-
-		repo := mysql.NewMySQLRepository(db)
-		business := business.NewRegisterBusiness(repo)
-
-		if err := business.Register(ctx.Request.Context(), &data); err != nil {
+		if err := service.business.Register(ctx, &data); err != nil {
 			core.ErrorResponse(ctx, err)
 			return
 		}

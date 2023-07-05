@@ -4,27 +4,16 @@ import (
 	"context"
 
 	"github.com/hoangtk0100/app-context/core"
+	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/services/item/entity"
 )
 
-type DeleteItemRepository interface {
-	GetItem(ctx context.Context, cond map[string]interface{}) (*entity.TodoItem, error)
-	DeleteItem(ctx context.Context, cond map[string]interface{}) error
-}
-
-type deleteItemBusiness struct {
-	repo DeleteItemRepository
-}
-
-func NewDeleteItemBusiness(repo DeleteItemRepository) *deleteItemBusiness {
-	return &deleteItemBusiness{repo: repo}
-}
-
-func (biz *deleteItemBusiness) DeleteItemByID(ctx context.Context, id int) error {
+func (biz *business) DeleteItemByID(ctx context.Context, id int) error {
 	data, err := biz.repo.GetItem(ctx, map[string]interface{}{"id": id})
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
 			return core.ErrNotFound.
+				WithError(entity.ErrCannotGetItem.Error()).
 				WithDebug(err.Error())
 		}
 
@@ -36,6 +25,13 @@ func (biz *deleteItemBusiness) DeleteItemByID(ctx context.Context, id int) error
 	if data.Status == "Deleted" {
 		return core.ErrBadRequest.
 			WithError(entity.ErrItemDeleted.Error())
+	}
+
+	requester := core.GetRequester(ctx)
+	requesterID := common.GetRequesterID(requester)
+	if data.UserID != requesterID {
+		return core.ErrForbidden.
+			WithError(entity.ErrRequesterIsNotOwner.Error())
 	}
 
 	if err := biz.repo.DeleteItem(ctx, map[string]interface{}{"id": id}); err != nil {

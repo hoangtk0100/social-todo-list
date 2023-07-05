@@ -2,15 +2,11 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
-	"github.com/hoangtk0100/social-todo-list/common"
-	"github.com/hoangtk0100/social-todo-list/services/user/business"
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
-	"github.com/hoangtk0100/social-todo-list/services/user/repository/mysql"
 )
 
-func Login(ac appctx.AppContext) gin.HandlerFunc {
+func (service *service) Login() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var loginData entity.UserLogin
 
@@ -19,12 +15,7 @@ func Login(ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		db := ac.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
-		tokenMaker := ac.MustGet(common.PluginJWT).(core.TokenMakerComponent)
-
-		repo := mysql.NewMySQLRepository(db)
-		business := business.NewLoginBusiness(repo, tokenMaker)
-		tokenPayload, err := business.Login(ctx.Request.Context(), &loginData)
+		tokenPayload, err := service.business.Login(ctx, &loginData)
 		if err != nil {
 			core.ErrorResponse(ctx, err)
 			return

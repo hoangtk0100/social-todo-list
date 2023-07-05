@@ -10,21 +10,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type UserUnlikeItemRepository interface {
-	Find(ctx context.Context, userID, itemID int) (*entity.Like, error)
-	Delete(ctx context.Context, userID, itemID int) error
-}
-
-type userUnlikeItemBusiness struct {
-	repo UserUnlikeItemRepository
-	ps   core.PubSubComponent
-}
-
-func NewUserUnlikeItemBusiness(repo UserUnlikeItemRepository, ps core.PubSubComponent) *userUnlikeItemBusiness {
-	return &userUnlikeItemBusiness{repo: repo, ps: ps}
-}
-
-func (biz *userUnlikeItemBusiness) UnlikeItem(ctx context.Context, userID, itemID int) error {
+func (biz *business) UnlikeItem(ctx context.Context, userID, itemID int) error {
 	_, err := biz.repo.Find(ctx, userID, itemID)
 	if err != nil {
 		if core.ErrNotFound.Is(err) {
@@ -34,13 +20,13 @@ func (biz *userUnlikeItemBusiness) UnlikeItem(ctx context.Context, userID, itemI
 		}
 
 		return core.ErrInternalServerError.
-			WithError(entity.ErrCannotUnlikeItem.Error()).
+			WithError(entity.ErrUnlikedItem.Error()).
 			WithDebug(err.Error())
 	}
 
 	if err := biz.repo.Delete(ctx, userID, itemID); err != nil {
 		return core.ErrInternalServerError.
-			WithError(entity.ErrCannotUnlikeItem.Error()).
+			WithError(entity.ErrUnlikedItem.Error()).
 			WithDebug(err.Error())
 	}
 
