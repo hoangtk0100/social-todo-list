@@ -10,28 +10,34 @@ import (
 	"github.com/hoangtk0100/app-context/component/datastore/redisdb"
 	"github.com/hoangtk0100/app-context/component/pubsub"
 	ginserver "github.com/hoangtk0100/app-context/component/server/gin"
+	ginmiddleware "github.com/hoangtk0100/app-context/component/server/gin/middleware"
 	appstorage "github.com/hoangtk0100/app-context/component/storage"
 	"github.com/hoangtk0100/app-context/component/token"
 	"github.com/hoangtk0100/app-context/component/tracer"
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/common"
+	"github.com/hoangtk0100/social-todo-list/component/rpccaller"
 	"github.com/hoangtk0100/social-todo-list/memcache"
 	"github.com/hoangtk0100/social-todo-list/middleware"
-	ginitem "github.com/hoangtk0100/social-todo-list/module/item/transport/gin"
-	ginuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/gin"
-	rpcuserlikeitem "github.com/hoangtk0100/social-todo-list/module/userlikeitem/transport/rpc"
+	itemBusiness "github.com/hoangtk0100/social-todo-list/services/item/business"
+	itemSQLRepo "github.com/hoangtk0100/social-todo-list/services/item/repository/mysql"
+	"github.com/hoangtk0100/social-todo-list/services/item/repository/rpc"
+	itemAPI "github.com/hoangtk0100/social-todo-list/services/item/transport/api"
+	uploadBusiness "github.com/hoangtk0100/social-todo-list/services/upload/business"
+	uploadSQLRepo "github.com/hoangtk0100/social-todo-list/services/upload/repository/mysql"
+	uploadAPI "github.com/hoangtk0100/social-todo-list/services/upload/transport/api"
+	userBusiness "github.com/hoangtk0100/social-todo-list/services/user/business"
+	userSQLRepo "github.com/hoangtk0100/social-todo-list/services/user/repository/mysql"
+	userAPI "github.com/hoangtk0100/social-todo-list/services/user/transport/api"
+	userLikeItemBusiness "github.com/hoangtk0100/social-todo-list/services/userlikeitem/business"
+	userLikeItemSQLRepo "github.com/hoangtk0100/social-todo-list/services/userlikeitem/repository/mysql"
+	userLikeItemAPI "github.com/hoangtk0100/social-todo-list/services/userlikeitem/transport/api"
+	userlikeitemRPC "github.com/hoangtk0100/social-todo-list/services/userlikeitem/transport/rpc"
 	"github.com/hoangtk0100/social-todo-list/subscriber"
-
-	acmiddleware "github.com/hoangtk0100/app-context/component/server/gin/middleware"
-	"github.com/hoangtk0100/social-todo-list/component/rpccaller"
-	ginupload "github.com/hoangtk0100/social-todo-list/module/upload/transport/gin"
-	userstorage "github.com/hoangtk0100/social-todo-list/module/user/storage"
-	ginuser "github.com/hoangtk0100/social-todo-list/module/user/transport/gin"
-
 	"github.com/spf13/cobra"
 )
 
-func newService() appctx.AppContext {
+func newAppContext() appctx.AppContext {
 	return appctx.NewAppContext(
 		appctx.WithName("social-todo-list"),
 		appctx.WithComponent(gormdb.NewGormDB(common.PluginDBMain, common.PluginDBMain)),
@@ -40,7 +46,7 @@ func newService() appctx.AppContext {
 		appctx.WithComponent(tracer.NewJaeger(common.PluginTracerJaeger)),
 		appctx.WithComponent(pubsub.NewNatsPubSub(common.PluginPubSub)),
 		appctx.WithComponent(redisdb.NewRedisDB(common.PluginRedis, common.PluginRedis)),
-		appctx.WithComponent(rpccaller.NewApiItemCaller(common.PluginItemAPI)),
+		appctx.WithComponent(rpccaller.NewItemAPICaller(common.PluginItemAPI)),
 		appctx.WithComponent(ginserver.NewGinServer(common.PluginGin)),
 	)
 }
@@ -49,76 +55,80 @@ var rootCmd = &cobra.Command{
 	Use:   "app",
 	Short: "Start social TODO service",
 	Run: func(cmd *cobra.Command, args []string) {
-		service := newService()
-		log := service.Logger("service")
+		appCtx := newAppContext()
+		log := appCtx.Logger("service")
 
-		if err := service.Load(); err != nil {
+		if err := appCtx.Load(); err != nil {
 			log.Fatal(err)
 		}
 
-		server := service.MustGet(common.PluginGin).(core.GinComponent)
-		router := server.GetRouter()
-		router.Use(acmiddleware.Recovery(service))
+		ginServer := appCtx.MustGet(common.PluginGin).(core.GinComponent)
+		router := ginServer.GetRouter()
+		router.Use(ginmiddleware.Recovery(appCtx))
 
-		db := service.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		db := appCtx.MustGet(common.PluginDBMain).(core.GormDBComponent).GetDB()
+		tokenMaker := appCtx.MustGet(common.PluginJWT).(core.TokenMakerComponent)
+		ps := appCtx.MustGet(common.PluginPubSub).(core.PubSubComponent)
+		storageProvider := appCtx.MustGet(common.PluginR2).(core.StorageComponent)
 
-		authStore := userstorage.NewSQLStore(db)
-		authCache := memcache.NewUserCache(cache.NewRedisCache(common.PluginRedis, service), authStore)
-		authMiddleware := middleware.RequireAuth(authCache, service)
+		userRepo := userSQLRepo.NewMySQLRepository(db)
+		userBiz := userBusiness.NewBusiness(userRepo, tokenMaker)
+		userService := userAPI.NewService(appCtx, userBiz)
+
+		authCache := memcache.NewUserCache(cache.NewRedisCache(common.PluginRedis, appCtx), userRepo)
+		authMiddleware := middleware.RequireAuth(authCache, appCtx)
+
+		itemAPICaller := appCtx.MustGet(common.PluginItemAPI).(common.ItemAPICaller)
+		likeRepo := rpc.NewItemAPIClient(itemAPICaller.GetServiceURL(), appCtx.Logger("rpc.itemlikes"))
+
+		itemRepo := itemSQLRepo.NewMySQLRepository(db)
+		itemBiz := itemBusiness.NewBusiness(itemRepo, likeRepo)
+		itemService := itemAPI.NewService(appCtx, itemBiz)
+
+		userLikeItemRepo := userLikeItemSQLRepo.NewMySQLRepository(db)
+		userLikeItemBiz := userLikeItemBusiness.NewBusiness(userLikeItemRepo, ps)
+		userLikeItemService := userLikeItemAPI.NewService(appCtx, userLikeItemBiz)
+
+		uploadRepo := uploadSQLRepo.NewMySQLRepository(db)
+		uploadBiz := uploadBusiness.NewBusiness(uploadRepo, storageProvider)
+		uploadService := uploadAPI.NewService(appCtx, uploadBiz)
 
 		router.Static("/static", "./static")
 		v1 := router.Group("/v1")
 		{
-			v1.POST("/register", ginuser.Register(service))
-			v1.POST("/login", ginuser.Login(service))
-			v1.GET("/profile", authMiddleware, ginuser.Profile(service))
+			v1.POST("/register", userService.Register())
+			v1.POST("/login", userService.Login())
+			v1.GET("/profile", authMiddleware, userService.Profile())
 
 			uploads := v1.Group("/upload", authMiddleware)
 			{
-				uploads.POST("", ginupload.Upload(service))
-				uploads.POST("/local", ginupload.UploadLocal())
+				uploads.POST("", uploadService.Upload())
+				uploads.POST("/local", uploadService.UploadLocal())
 			}
 
 			items := v1.Group("/items", authMiddleware)
 			{
-				items.POST("", ginitem.CreateItem(service))
-				items.GET("", ginitem.ListItem(service))
-				items.GET("/:id", ginitem.GetItem(service))
-				items.PATCH("/:id", ginitem.UpdateItem(service))
-				items.DELETE("/:id", ginitem.DeleteItem(service))
+				items.POST("", itemService.CreateItem())
+				items.GET("", itemService.ListItem())
+				items.GET("/:id", itemService.GetItem())
+				items.PATCH("/:id", itemService.UpdateItem())
+				items.DELETE("/:id", itemService.DeleteItem())
 
-				items.POST("/:id/like", ginuserlikeitem.LikeItem(service))
-				items.DELETE("/:id/unlike", ginuserlikeitem.UnlikeItem(service))
-				items.GET("/:id/liked-users", ginuserlikeitem.ListLikedUsers(service))
+				items.POST("/:id/like", userLikeItemService.LikeItem())
+				items.DELETE("/:id/unlike", userLikeItemService.UnlikeItem())
+				items.GET("/:id/liked-users", userLikeItemService.ListLikedUsers())
 			}
 
 			rpc := v1.Group("/rpc")
 			{
-				rpc.POST("/get_item_likes", rpcuserlikeitem.GetItemLikes(service))
+				rpc.POST("/get_item_likes", userlikeitemRPC.GetItemLikes(appCtx))
 			}
 		}
 
-		startPbEngine(service)
-		server.Start()
+		subscriber.StartPbEngine(appCtx)
+
+		ginServer.Start()
 	},
-}
-
-func startPbEngine(ac appctx.AppContext) {
-	ps := ac.MustGet(common.PluginPubSub).(core.PubSubComponent)
-	pbEngine := core.NewSubscribeEngine(common.PubSubEngineName, ps, ac)
-	pbEngine.AddTopicJobs(
-		common.TopicUserLikedItem,
-		true,
-		subscriber.IncreaseLikedCountAfterUserLikeItem(ac),
-	)
-
-	pbEngine.AddTopicJobs(
-		common.TopicUserUnlikedItem,
-		true,
-		subscriber.DecreaseLikedCountAfterUserUnlikeItem(ac),
-	)
-
-	pbEngine.Start()
 }
 
 func Execute() {
