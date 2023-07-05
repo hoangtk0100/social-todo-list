@@ -6,6 +6,7 @@ principles of Clean Architecture.
 It utilizes various technologies and services to provide a robust and scalable solution. The key technologies and
 services used in this project are:
 
+- **[AppContext](https://github.com/hoangtk0100/app-context)**: A custom library that manages common components, some used in this repo as below.
 - **Go Gin**: A lightweight web framework for building RESTful APIs in Go.
 - **Pub/Sub with NATS**: A messaging system for building distributed systems and microservices architecture.
 - **Redis Cache**: A fast in-memory data store used for caching frequently accessed data.
