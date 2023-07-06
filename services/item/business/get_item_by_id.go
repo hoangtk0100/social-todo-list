@@ -21,5 +21,10 @@ func (biz *business) GetItemByID(ctx context.Context, id int) (*entity.TodoItem,
 			WithDebug(err.Error())
 	}
 
+	if data.Status == "Deleted" {
+		return nil, core.ErrNotFound.
+			WithDebug(entity.ErrItemDeleted.Error())
+	}
+
 	return data, nil
 }

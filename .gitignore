@@ -26,6 +26,7 @@ go.work
 # IDE files
 .idea
 .vscode
+__debug_bin
 
 # ENV files
 *.production

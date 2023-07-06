@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/hoangtk0100/app-context/component/cache"
+	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
 )
 
@@ -16,12 +16,12 @@ type RealUserRepository interface {
 }
 
 type userCache struct {
-	repo     cache.Cache
+	repo     core.CacheComponent
 	realRepo RealUserRepository
 	once     *sync.Once
 }
 
-func NewUserCache(repo cache.Cache, realRepo RealUserRepository) *userCache {
+func NewUserCache(repo core.CacheComponent, realRepo RealUserRepository) *userCache {
 	return &userCache{
 		repo:     repo,
 		realRepo: realRepo,

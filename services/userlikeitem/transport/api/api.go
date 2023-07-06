@@ -12,6 +12,7 @@ type UserLikeItemBusiness interface {
 	LikeItem(ctx context.Context, data *entity.Like) error
 	UnlikeItem(ctx context.Context, userID, itemID int) error
 	ListUsersLikedItem(ctx context.Context, itemID int, paging *core.Paging) ([]core.SimpleUser, error)
+	GetItemLikes(ctx context.Context, ids []int) (map[int]int, error)
 }
 
 type service struct {
