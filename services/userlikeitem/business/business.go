@@ -21,5 +21,8 @@ type business struct {
 }
 
 func NewBusiness(repo UserLikeItemRepository, ps core.PubSubComponent) *business {
-	return &business{repo: repo}
+	return &business{
+		repo: repo,
+		ps:   ps,
+	}
 }

@@ -8,4 +8,5 @@ var (
 	ErrDidNotLikeItem       = errors.New("you have not liked this item")
 	ErrItemIDInvalid        = errors.New("invalid TODO id")
 	ErrCannotListLikedUsers = errors.New("cannot list users liked item")
+	ErrCannotGetItemLikes   = errors.New("cannot get item likes")
 )

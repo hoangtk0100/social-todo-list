@@ -1,18 +1,14 @@
 package common
 
-import (
-	"time"
-)
-
 const (
-	PluginDBMain       = "mysql"
-	PluginJWT          = "jwt"
-	PluginR2           = "r2"
-	PluginPubSub       = "pubsub"
-	PluginItemAPI      = "item-api"
-	PluginTracerJaeger = "social-todo-jaeger"
-	PluginRedis        = "redis"
-	PluginGin          = "gin"
+	PluginDBMain     = "mysql"
+	PluginTokenMaker = "jwt"
+	PluginStorage    = "r2"
+	PluginPubSub     = "pubsub"
+	PluginItemAPI    = "item-api"
+	PluginTracer     = "social-todo-jaeger"
+	PluginRedis      = "redis"
+	PluginGin        = "gin"
 
 	PubSubEngineName = "pb-engine"
 
@@ -24,8 +20,3 @@ const (
 	MaskTypeUser = 1
 	MaskTypeItem = 2
 )
-
-type Token struct {
-	AccessToken string    `json:"access_token"`
-	ExpiredAt   time.Time `json:"expired_at"`
-}

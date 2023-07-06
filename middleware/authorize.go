@@ -6,10 +6,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	appctx "github.com/hoangtk0100/app-context"
 	"github.com/hoangtk0100/app-context/core"
 	"github.com/hoangtk0100/app-context/util"
-	"github.com/hoangtk0100/social-todo-list/common"
 	"github.com/hoangtk0100/social-todo-list/services/user/entity"
 )
 
@@ -25,7 +23,7 @@ var (
 	ErrUserDeletedOrBanned       = errors.New("user has been deleted or banned")
 )
 
-type AuthenRepository interface {
+type AuthRepository interface {
 	GetUserByID(ctx context.Context, id int) (*entity.User, error)
 }
 
@@ -47,7 +45,7 @@ func extractTokenFromHeader(input string) (string, error) {
 	return parts[1], nil
 }
 
-func RequireAuth(repo AuthenRepository, ac appctx.AppContext) gin.HandlerFunc {
+func RequireAuth(repo AuthRepository, tokenMaker core.TokenMakerComponent) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token, err := extractTokenFromHeader(ctx.GetHeader(authorizationHeaderKey))
 		if err != nil {
@@ -56,7 +54,6 @@ func RequireAuth(repo AuthenRepository, ac appctx.AppContext) gin.HandlerFunc {
 			return
 		}
 
-		tokenMaker := ac.MustGet(common.PluginJWT).(core.TokenMakerComponent)
 		payload, err := tokenMaker.VerifyToken(token)
 		if err != nil {
 			core.ErrorResponse(ctx, core.ErrUnauthorized.WithError(err.Error()).WithDebug(err.Error()))
