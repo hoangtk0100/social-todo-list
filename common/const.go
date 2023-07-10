@@ -9,6 +9,8 @@ const (
 	PluginTracer     = "social-todo-jaeger"
 	PluginRedis      = "redis"
 	PluginGin        = "gin"
+	PluginGRPCServer = "grpc-server"
+	PluginGRPCClient = "grpc-client"
 
 	PubSubEngineName = "pb-engine"
 

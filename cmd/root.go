@@ -1,16 +1,21 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
+	"github.com/hoangtk0100/social-todo-list/pb"
+
 	"github.com/gin-gonic/gin"
 	appctx "github.com/hoangtk0100/app-context"
+	grpcclient "github.com/hoangtk0100/app-context/component/client/grpc"
 	"github.com/hoangtk0100/app-context/component/datastore/gormdb"
 	"github.com/hoangtk0100/app-context/component/datastore/redisdb"
 	"github.com/hoangtk0100/app-context/component/pubsub"
 	ginserver "github.com/hoangtk0100/app-context/component/server/gin"
 	"github.com/hoangtk0100/app-context/component/server/gin/middleware"
+	grpcserver "github.com/hoangtk0100/app-context/component/server/grpc"
 	"github.com/hoangtk0100/app-context/component/storage"
 	"github.com/hoangtk0100/app-context/component/token"
 	"github.com/hoangtk0100/app-context/component/tracer"
@@ -32,7 +37,9 @@ func newAppContext() appctx.AppContext {
 		appctx.WithComponent(pubsub.NewNatsPubSub(common.PluginPubSub)),
 		appctx.WithComponent(redisdb.NewRedisDB(common.PluginRedis, common.PluginRedis)),
 		appctx.WithComponent(rpccaller.NewItemAPICaller(common.PluginItemAPI)),
-		appctx.WithComponent(ginserver.NewGinServer(common.PluginGin)),
+		appctx.WithComponent(ginserver.NewServer(common.PluginGin)),
+		appctx.WithComponent(grpcserver.NewServer(common.PluginGRPCServer)),
+		appctx.WithComponent(grpcclient.NewClient(common.PluginGRPCClient, "")),
 	)
 }
 
@@ -49,22 +56,36 @@ var rootCmd = &cobra.Command{
 
 		common.AppStore = common.NewAppStore(appCtx)
 
-		ginServer := appCtx.MustGet(common.PluginGin).(core.GinComponent)
-		router := ginServer.GetRouter()
-		v1 := router.Group("/v1")
-		setupRoutes(v1)
-
 		subscriber.StartPbEngine(appCtx)
 
-		ginServer.Start()
+		go startGRPCServer(appCtx)
+		startGinServer(appCtx)
 	},
+}
+
+func startGRPCServer(ac appctx.AppContext) {
+	grpcServer := ac.MustGet(common.PluginGRPCServer).(core.GRPCServerComponent)
+	server := grpcServer.GetServer()
+
+	pb.RegisterUserLikeItemServiceServer(server, builder.BuildUserLikeItemGRPCService())
+
+	grpcServer.Start(context.Background())
+}
+
+func startGinServer(ac appctx.AppContext) {
+	ginServer := ac.MustGet(common.PluginGin).(core.GinComponent)
+	router := ginServer.GetRouter()
+	v1 := router.Group("/v1")
+	setupRoutes(v1)
+
+	ginServer.Start()
 }
 
 func setupRoutes(router *gin.RouterGroup) {
 	userService := builder.BuildUserAPIService()
 	itemService := builder.BuildItemAPIService()
 	userLikeItemService := builder.BuildUserLikeItemAPIService()
-	userLikeItemRPCService := builder.BuildUserLikeItemRPCService()
+	//userLikeItemRPCService := builder.BuildUserLikeItemRPCService()
 	uploadService := builder.BuildUploadAPIService()
 	authMiddleware := builder.BuildAuthMiddleware()
 
@@ -94,10 +115,10 @@ func setupRoutes(router *gin.RouterGroup) {
 		items.GET("/:id/liked-users", userLikeItemService.ListLikedUsers())
 	}
 
-	rpc := router.Group("/rpc")
-	{
-		rpc.POST("/get_item_likes", userLikeItemRPCService.GetItemLikes())
-	}
+	//rpc := router.Group("/rpc")
+	//{
+	//	rpc.POST("/get_item_likes", userLikeItemRPCService.GetItemLikes())
+	//}
 }
 
 func Execute() {

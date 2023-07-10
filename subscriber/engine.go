@@ -7,7 +7,7 @@ import (
 )
 
 func StartPbEngine(ac appctx.AppContext) {
-	pbEngine := core.NewSubscribeEngine(common.PubSubEngineName, common.AppStore.PS, ac)
+	pbEngine := core.NewSubscriberEngine(common.PubSubEngineName, common.AppStore.PS, ac)
 	pbEngine.AddTopicJobs(
 		common.TopicUserLikedItem,
 		true,
