@@ -7,12 +7,14 @@ It utilizes various technologies and services to provide a robust and scalable s
 services used in this project are:
 
 - **[AppContext](https://github.com/hoangtk0100/app-context)**: A custom library that manages common components, some used in this repo as below.
+- **gRPC**: An efficient and high-performance remote procedure call (RPC) framework designed for building scalable and reliable distributed systems.
 - **Go Gin**: A lightweight web framework for building RESTful APIs in Go.
 - **Pub/Sub with NATS**: A messaging system for building distributed systems and microservices architecture.
 - **Redis Cache**: A fast in-memory data store used for caching frequently accessed data.
 - **Asynchronous Job Group**: A mechanism for executing tasks asynchronously to improve performance and responsiveness.
 - **Jaeger**: A distributed tracing system used to monitor and troubleshoot the service's performance.
 - **Cloudflare R2**: A cloud storage service used for storing and retrieving files in a distributed manner.
+- **PASETO**: A secure token format designed for authentication and authorization purposes. It aims to provide a more secure and versatile alternative to traditional JSON Web Tokens (JWTs).
 - **MySQL**: Main database.
 
 ## Features

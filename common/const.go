@@ -2,7 +2,7 @@ package common
 
 const (
 	PluginDBMain     = "mysql"
-	PluginTokenMaker = "jwt"
+	PluginTokenMaker = "paseto"
 	PluginStorage    = "r2"
 	PluginPubSub     = "pubsub"
 	PluginItemAPI    = "item-api"
