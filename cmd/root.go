@@ -31,7 +31,7 @@ func newAppContext() appctx.AppContext {
 	return appctx.NewAppContext(
 		appctx.WithName("social-todo-list"),
 		appctx.WithComponent(gormdb.NewGormDB(common.PluginDBMain, common.PluginDBMain)),
-		appctx.WithComponent(token.NewJWTMaker(common.PluginTokenMaker)),
+		appctx.WithComponent(token.NewPasetoMaker(common.PluginTokenMaker)),
 		appctx.WithComponent(storage.NewR2Storage(common.PluginStorage)),
 		appctx.WithComponent(tracer.NewJaeger(common.PluginTracer)),
 		appctx.WithComponent(pubsub.NewNatsPubSub(common.PluginPubSub)),
