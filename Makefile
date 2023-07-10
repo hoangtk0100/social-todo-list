@@ -36,6 +36,13 @@ db:
 server:
 	go run .
 
+proto:
+	rm -rf pb/*.go
+	buf generate
+
+evans:
+	evans --host localhost --port 9099 -r repl
+
 build:
 	go build -o app
 
@@ -45,4 +52,4 @@ outenv:
 outenvfile:
 	./app outenv > .env
 
-.PHONY: upv up down cache upcache network mysql createdb dropdb db server build outenv outenvfile
+.PHONY: upv up down cache upcache network mysql createdb dropdb db server proto evans build outenv outenvfile

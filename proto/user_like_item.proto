@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "pb/";
+
+message GetItemLikesRequest {
+    repeated int32 ids = 1;
+}
+
+message GetItemLikesResponse {
+    map<int32, int32> data = 1;
+}
+
+service UserLikeItemService {
+    rpc GetItemLikes(GetItemLikesRequest) returns (GetItemLikesResponse);
+}

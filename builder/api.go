@@ -6,8 +6,8 @@ import (
 	"github.com/hoangtk0100/social-todo-list/memcache"
 	"github.com/hoangtk0100/social-todo-list/middleware"
 	item_business "github.com/hoangtk0100/social-todo-list/services/item/business"
+	item_grpc_repo "github.com/hoangtk0100/social-todo-list/services/item/repository/grpc"
 	item_sql_repo "github.com/hoangtk0100/social-todo-list/services/item/repository/mysql"
-	"github.com/hoangtk0100/social-todo-list/services/item/repository/rpc"
 	item_api "github.com/hoangtk0100/social-todo-list/services/item/transport/api"
 	upload_business "github.com/hoangtk0100/social-todo-list/services/upload/business"
 	upload_sql_repo "github.com/hoangtk0100/social-todo-list/services/upload/repository/mysql"
@@ -17,8 +17,9 @@ import (
 	user_api "github.com/hoangtk0100/social-todo-list/services/user/transport/api"
 	user_like_item_business "github.com/hoangtk0100/social-todo-list/services/userlikeitem/business"
 	user_like_item_sql_repo "github.com/hoangtk0100/social-todo-list/services/userlikeitem/repository/mysql"
+	//user_like_item_grpc_repo "github.com/hoangtk0100/social-todo-list/services/userlikeitem/repository/grpc"
 	user_like_item_api "github.com/hoangtk0100/social-todo-list/services/userlikeitem/transport/api"
-	user_like_tem_rpc "github.com/hoangtk0100/social-todo-list/services/userlikeitem/transport/rpc"
+	user_like_item_rpc "github.com/hoangtk0100/social-todo-list/services/userlikeitem/transport/rpc"
 )
 
 type (
@@ -66,10 +67,11 @@ func BuildUserAPIService() UserService {
 }
 
 func BuildItemAPIService() ItemService {
-	itemAPICaller := common.AppStore.ItemAPICaller
-	likeRepo := rpc.NewItemAPIClient(itemAPICaller.GetServiceURL(), common.AppStore.CTX.Logger("rpc.itemlikes"))
+	// itemAPICaller := common.AppStore.ItemAPICaller
+	// likeRepo := rpc.NewItemAPIClient(itemAPICaller.GetServiceURL(), common.AppStore.CTX.Logger("rpc.itemlikes"))
+	likeClient := item_grpc_repo.NewClient(buildUserLikeItemGRPCClient())
 	repo := item_sql_repo.NewMySQLRepository(common.AppStore.DB)
-	business := item_business.NewBusiness(repo, likeRepo)
+	business := item_business.NewBusiness(repo, likeClient)
 	service := item_api.NewService(common.AppStore.CTX, business)
 	return service
 }
@@ -84,7 +86,7 @@ func BuildUserLikeItemAPIService() UserLikeItemService {
 func BuildUserLikeItemRPCService() UserLikeItemRPCService {
 	repo := user_like_item_sql_repo.NewMySQLRepository(common.AppStore.DB)
 	business := user_like_item_business.NewBusiness(repo, common.AppStore.PS)
-	service := user_like_tem_rpc.NewService(common.AppStore.CTX, business)
+	service := user_like_item_rpc.NewService(common.AppStore.CTX, business)
 	return service
 }
 
